@@ -349,7 +349,12 @@ def build() -> tuple:
                         .groupby(cur.abc_class).sum().round(2),
         "value_optimal_units": (cur.z_optimal_units * cur.sigma_dl * cur.unit_cost)
                                .groupby(cur.abc_class).sum().round(2),
-        "service_now": float(norm_cdf(CURRENT_Z)),
+        # Rounded like every other float that reaches a file. norm_cdf is
+        # built on math.erf, which is the platform's libm, so the sixteenth
+        # digit of this number is a property of the machine that wrote it -
+        # and CI asserts these files regenerate byte for byte. It failed on
+        # the Linux runner and passed on Windows for exactly that digit.
+        "service_now": round(float(norm_cdf(CURRENT_Z)), 4),
         "service_ladder": pd.Series(norm_cdf(cur.z_ladder), index=cur.index)
                           .groupby(cur.abc_class).mean().round(4),
         "service_optimal_units": pd.Series(norm_cdf(cur.z_optimal_units),
