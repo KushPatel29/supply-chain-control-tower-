@@ -26,6 +26,14 @@ README = ROOT / "README.md"
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
+# The container image leaves the screenshots out of its build context on purpose
+# - they are documentation, not runtime - so this file has nothing to check when
+# the suite runs inside it. Skipping there is correct, and it keeps its teeth on
+# the runner job, which has the whole checkout.
+pytestmark = pytest.mark.skipif(
+    not SHOTS.is_dir(),
+    reason="this checkout ships no screenshots (see .dockerignore)")
+
 
 def png_size(path):
     """(width, height) from the IHDR chunk."""
