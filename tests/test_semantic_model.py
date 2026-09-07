@@ -59,11 +59,23 @@ MEASURE_REF_RE = re.compile(r"(?<![\w'\]])\[([^\]\[]+)\]")
 
 
 def path_parameters():
-    """`expression <Name> = "<literal path>"` in expressions.tmdl."""
+    """`expression <Name> = "<literal path>"` in expressions.tmdl.
+
+    The literal is an absolute path on the machine that authored the model, so
+    it does not exist on a CI runner or in anyone else's clone. Every one of
+    them points inside this repository, so the path is rebased onto ROOT at the
+    repository-name segment. Without that, this whole file passes locally and
+    fails on every push - which is the opposite of what a gate is for.
+    """
     text = (SM / "expressions.tmdl").read_text(encoding="utf-8")
     out = {}
     for name, value in re.findall(r'^expression (\w+) = "([^"]+)"', text, re.M):
-        out[name] = Path(value.replace("\\\\", "\\"))
+        parts = [p for p in re.split(r"[\/]+", value.replace("\\\\", "\\")) if p]
+        if ROOT.name in parts:
+            tail = parts[parts.index(ROOT.name) + 1:]
+            out[name] = ROOT.joinpath(*tail) if tail else ROOT
+        else:
+            out[name] = Path(value)
     return out
 
 
