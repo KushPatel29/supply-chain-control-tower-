@@ -23,11 +23,11 @@
                       "Entity": "dim_date"
                     }
                   },
-                  "Property": "full_date"
+                  "Property": "year_month"
                 }
               },
-              "queryRef": "dim_date.full_date",
-              "nativeQueryRef": "full_date",
+              "queryRef": "dim_date.year_month",
+              "nativeQueryRef": "year_month",
               "active": true
             }
           ]
@@ -60,6 +60,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'Revenue Trend'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Monthly, on the fiscal calendar'"
                 }
               }
             },

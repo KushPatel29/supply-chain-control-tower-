@@ -1,0 +1,35 @@
+/// Which of the two OTIF failures actually happened. Separate from
+/// perfect_order because a chart of failures should not also plot an
+/// 89% in-full bar that dwarfs all three of them.
+table perfect_order_failures
+	lineageTag: 72d1cc57-9b5f-5fb4-a7d9-988c8f38ccac
+
+	column 'Failure'
+		dataType: string
+		lineageTag: 9517dd03-493f-58a0-83d5-a0de5741785a
+		summarizeBy: none
+		sourceColumn: measure
+
+	column 'Orders'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 5be151ac-cdf4-5201-93c1-b1a0584ba856
+		summarizeBy: none
+		sourceColumn: orders
+
+	column 'Rate'
+		dataType: double
+		formatString: 0.0%
+		lineageTag: dcddb07d-4c54-5d12-aa37-47715546a877
+		summarizeBy: none
+		sourceColumn: rate
+
+	partition perfect_order_failures = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\perfect_order_failures.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"measure", type text}, {"orders", Int64.Type}, {"rate", type number}})
+				in
+				    Typed

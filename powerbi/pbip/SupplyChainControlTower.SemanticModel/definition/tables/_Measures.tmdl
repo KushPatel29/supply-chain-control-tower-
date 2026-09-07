@@ -2,15 +2,15 @@ table _Measures
 	lineageTag: db375e73-e25e-406f-8216-fd51d6e5b14c
 
 	measure 'Total Revenue' = SUM(fact_orders[revenue])
-		formatString: #,0.00
+		formatString: \$#,0.00
 		lineageTag: cdc7dc36-f84b-43e1-bf50-c2fd5ed62e7e
 
 	measure 'Total COGS' = SUM(fact_orders[cogs])
-		formatString: #,0.00
+		formatString: \$#,0.00
 		lineageTag: 95414b3e-150f-4f30-89f2-37dca3a6e7eb
 
 	measure 'Gross Margin $' = [Total Revenue] - [Total COGS]
-		formatString: #,0.00
+		formatString: \$#,0.00
 		lineageTag: 0617cc8b-ce78-457b-b223-e49e93dc135a
 
 	measure 'Gross Margin %' = DIVIDE([Gross Margin $], [Total Revenue])
@@ -42,7 +42,7 @@ table _Measures
 		lineageTag: 3d8abc15-4365-4127-a1b8-38193f406fe3
 
 	measure 'Total Inventory Value' = SUM(fact_inventory[inventory_value])
-		formatString: #,0.00
+		formatString: \$#,0
 		lineageTag: e58b47c8-f8db-4119-9136-fb635aa4e524
 
 	measure 'Qty On Hand' = SUM(fact_inventory[qty_on_hand])
@@ -50,11 +50,11 @@ table _Measures
 		lineageTag: 810a246f-c76e-4836-9e00-19bb188aa3ef
 
 	measure 'Critical Expiry Value' = CALCULATE([Total Inventory Value], fact_inventory[expiry_risk_flag] = "Critical")
-		formatString: #,0.00
+		formatString: \$#,0
 		lineageTag: e1d87e95-555b-4e81-bdf9-5a790a6180d5
 
 	measure 'Warning Expiry Value' = CALCULATE([Total Inventory Value], fact_inventory[expiry_risk_flag] = "Warning")
-		formatString: #,0.00
+		formatString: \$#,0
 		lineageTag: 4a3c2171-f9e7-4ae0-b517-e83ff6980c25
 
 	measure '% Inventory at Risk' = DIVIDE([Critical Expiry Value] + [Warning Expiry Value], [Total Inventory Value])
@@ -62,7 +62,7 @@ table _Measures
 		lineageTag: 6e0e49e2-e94e-4fb2-a21e-56849a3c7ef0
 
 	measure 'Avg Inventory Value' = AVERAGEX(VALUES(dim_date[full_date]), [Total Inventory Value])
-		formatString: #,0.00
+		formatString: \$#,0
 		lineageTag: e310e1a1-ff53-43ca-89be-1d92a96f8d41
 
 	measure 'Inventory Turns' =
@@ -80,6 +80,305 @@ table _Measures
 	measure 'OTIF Target' = 0.95
 		formatString: 0.0%
 		lineageTag: c3f85290-b443-4fad-9364-caf0ca46ce88
+
+	/// The half of the KPI that was missing: otif against what?
+	measure 'OTIF vs Target' = [OTIF %] - [OTIF Target]
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Verdict
+		lineageTag: 2f01e384-1828-5a85-b7f7-c49aaf747f42
+
+	/// The model decides what 'bad' means, once, instead of every reader deciding for themselves in the meeting.
+	measure 'OTIF Status' =
+			VAR Actual = [OTIF %]
+			VAR Target = [OTIF Target]
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        ISBLANK(Actual), "No data",
+			        Actual >= Target, "On target",
+			        Actual >= Target - 0.01, "Watch",
+			        "Off target"
+			    )
+		displayFolder: Verdict
+		lineageTag: 7adffe58-494b-5653-b4a4-b276d98c502c
+
+	/// Bind to Conditional formatting -> Field value. The hex values are the Meridian Nocturne semantic colours, so report and theme cannot drift apart.
+	measure 'OTIF Colour' =
+			SWITCH(
+			    [OTIF Status],
+			    "On target", "#3DD68C",
+			    "Watch", "#F5A524",
+			    "No data", "#454A82",
+			    "#FF5C7A"
+			)
+		displayFolder: Verdict
+		lineageTag: 505d10a1-8d48-5158-9e58-14f002c358b0
+
+	/// Reference line under the callout, shown as the card's subtitle.
+	measure 'OTIF Reference' =
+			VAR Gap = [OTIF vs Target]
+			VAR Above = Gap >= 0
+			RETURN
+			    "Target " & FORMAT([OTIF Target], "0.0%") & "   "
+			        & IF(Above, "▲", "▼") & " "
+			        & FORMAT(ABS(Gap) * 100, "0.0") & " pts" & IF(Above, " over", " under")
+		displayFolder: Verdict
+		lineageTag: 59bb9e4d-ee97-5208-a1b8-e916f55a415a
+
+	/// Blank unless a single month is in scope: DATEADD over a six-month range
+	/// shifts the whole window, and that is not a prior month. dim_date is marked
+	/// as a date table here, so DATEADD is available - the only one of the six models where that is true.
+	measure 'Revenue PM' =
+			IF(
+			    HASONEVALUE(dim_date[year_month]),
+			    CALCULATE([Total Revenue], DATEADD(dim_date[full_date], -1, MONTH))
+			)
+		formatString: \$#,0
+		displayFolder: Comparison
+		lineageTag: 610f3ee3-7f8d-5772-8b8a-0096d344fe5b
+
+	/// Change against the prior month.
+	measure 'Revenue MoM %' = DIVIDE([Total Revenue] - [Revenue PM], [Revenue PM])
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Comparison
+		lineageTag: f2fb44fa-05a9-5786-a7ae-7e2574796b9f
+
+	/// Card subtitle for Total Revenue.
+	measure 'Revenue Reference' =
+			VAR Prior = [Revenue PM]
+			RETURN
+			    IF(
+			        ISBLANK(Prior),
+			        "All periods in scope",
+			        "Prior month " & FORMAT(DIVIDE(Prior, 1000000), "\$#,0.0") & "M" & "   "
+			            & IF([Total Revenue] >= Prior, "▲", "▼") & " "
+			            & FORMAT(ABS([Revenue MoM %]), "0.0%")
+			    )
+		displayFolder: Verdict
+		lineageTag: 4fbed6f7-f9b1-56ed-9185-e17da27911f5
+
+	/// States the basis instead of leaving a bare percentage.
+	measure 'Margin Reference' = "Gross margin " & FORMAT(DIVIDE([Gross Margin $], 1000000), "\$#,0.0") & "M" & " on " & FORMAT(DIVIDE([Total Revenue], 1000000), "\$#,0.0") & "M" & " revenue"
+		displayFolder: Verdict
+		lineageTag: ce64e158-01cf-57af-8c36-857aef0e208a
+
+	/// Splits the risk number into the two tiers behind it.
+	measure 'Inventory Risk Reference' = "Critical " & FORMAT([Critical Expiry Value], "\$#,0") & "   Warning " & FORMAT([Warning Expiry Value], "\$#,0")
+		displayFolder: Verdict
+		lineageTag: 482997dc-3ce2-53eb-a6a7-bf29f0c4a622
+
+	/// Highlights the largest value on the axis and recedes the rest.
+	/// The bare ALLSELECTED() is what makes this work inside a conditional
+	/// format: it restores the VISUAL's filter context, so VALUES() is the
+	/// axis rather than the single data point. Iterating the column alone
+	/// leaves the point's own filter in place and every bar matches itself;
+	/// iterating the table walks rows, which is not the axis unless the
+	/// dimension happens to have one row per value.
+	measure 'Category Margin Colour' =
+			VAR Here = [Gross Margin $]
+			VAR Extreme =
+			    CALCULATE(
+			        MAXX(VALUES(dim_product[category]), [Gross Margin $]),
+			        ALLSELECTED()
+			    )
+			RETURN
+			    IF(Here = Extreme, "#3DD68C", "#454A82")
+		displayFolder: Verdict
+		lineageTag: 692afb5f-d50b-5bf7-8bd1-bb44c5d704ed
+
+	/// Any category under the 95% OTIF target reads red - region, channel or lane.
+	measure 'OTIF Breach Colour' =
+			IF(
+			    [OTIF %] < [OTIF Target],
+			    "#FF5C7A",
+			    "#454A82"
+			)
+		displayFolder: Verdict
+		lineageTag: 4383159a-dde5-524e-b967-c924daa93d0d
+
+	/// A semantic mapping rather than a ranking: Critical is red because it is critical, not because it happens to be the largest bar.
+	measure 'Expiry Risk Colour' =
+			SWITCH(
+			    SELECTEDVALUE(fact_inventory[expiry_risk_flag]),
+			    "Critical", "#FF5C7A",
+			    "Warning", "#F5A524",
+			    "#3DD68C"
+			)
+		displayFolder: Verdict
+		lineageTag: d253aa66-aa98-5831-a362-84d9d20e473d
+
+	/// Deterministic narrative. Smart Narrative would write this too, but a measure can be unit tested and cannot drift.
+	measure 'Control Tower Insight' =
+			VAR Otif = [OTIF %]
+			VAR Gap = Otif - [OTIF Target]
+			VAR WorstRegion =
+			    MAXX(TOPN(1, VALUES(dim_warehouse[region]), [OTIF %], ASC), dim_warehouse[region])
+			VAR WorstOtif = CALCULATE([OTIF %], dim_warehouse[region] = WorstRegion)
+			RETURN
+			    "OTIF " & FORMAT(Otif, "0.0%") & " against a " & FORMAT([OTIF Target], "0.0%")
+			        & " target — " & IF(Gap >= 0, "on target", FORMAT(ABS(Gap) * 100, "0.0") & " pts short")
+			        & ". " & WorstRegion & " is the weakest lane at " & FORMAT(WorstOtif, "0.0%")
+			        & ", and " & FORMAT([% Inventory at Risk], "0.0%") & " of inventory value sits in the expiry window."
+		displayFolder: Verdict
+		lineageTag: 0166a3cc-0c83-5c3b-9c28-73412f73c5f8
+
+	/// Rows on the approved vendor list: one per SKU-supplier award.
+	measure 'Approved Sources' = COUNTROWS(fact_sourcing)
+		formatString: #,0
+		lineageTag: 87882699-728c-5fde-acd3-d957b3a11e30
+		displayFolder: Sourcing
+
+	/// SKUs with at least one approved source.
+	measure 'Sourced SKUs' = DISTINCTCOUNT(fact_sourcing[product_id])
+		formatString: #,0
+		lineageTag: 382d92e0-759c-50f2-b092-a76d93af5264
+		displayFolder: Sourcing
+
+	/// SKUs with exactly one approved supplier. The number a supply chain director is asked for first, because it is the one with no plan B.
+	measure 'Single-Source SKUs' =
+			COUNTROWS(
+			    FILTER(
+			        VALUES(fact_sourcing[product_id]),
+			        CALCULATE(DISTINCTCOUNT(fact_sourcing[supplier_id])) = 1
+			    )
+			)
+		formatString: #,0
+		lineageTag: 008f6d29-c15d-51ce-a7ab-c5912fabf92a
+		displayFolder: Sourcing
+
+	/// Herfindahl index over award shares, averaged across SKUs. 10,000 is a single source; under 1,500 is a genuinely spread base.
+	measure 'Award HHI' =
+			AVERAGEX(
+			    VALUES(fact_sourcing[product_id]),
+			    CALCULATE(SUMX(fact_sourcing, fact_sourcing[allocation_share] ^ 2)) * 10000
+			)
+		formatString: #,0
+		lineageTag: da694c1b-0bfb-59cc-abc1-556c53b5fea4
+		displayFolder: Sourcing
+
+	/// COGS awarded to the origins in scope.
+	measure 'Exposed COGS' = SUM(country_exposure[Exposed COGS])
+		formatString: \$#,0
+		lineageTag: fad1031c-f036-5ec5-9549-af0bf1e0e0a5
+		displayFolder: Sourcing
+
+	/// SKUs left with no QUALIFIED alternate if the selected origin closes. An unqualified alternate needs a requalification programme first, so it does not count as cover.
+	measure 'Stranded SKUs' = SUM(country_exposure[Stranded SKUs])
+		formatString: #,0
+		lineageTag: 6946f535-5e6b-5bae-8157-e302ad4e11e3
+		displayFolder: Sourcing
+
+	/// Share of COGS sitting with the single biggest origin.
+	measure 'Largest Origin Share' = MAX(country_exposure[Share of COGS])
+		formatString: 0.0%
+		lineageTag: 16462c1c-2cfa-57db-bdcc-8c9f6bfdfe6a
+		displayFolder: Sourcing
+
+	/// Concentration across origins. Above 2,500 is concentrated by the competition-authority convention this borrows.
+	measure 'Country HHI' = SUMX(ALL(country_exposure), country_exposure[Share of COGS] ^ 2) * 10000
+		formatString: #,0
+		lineageTag: 0dd234b4-7a1e-55b6-a397-21f3dfdaa3ea
+		displayFolder: Sourcing
+
+	/// Award-weighted contract lead time. Weighted, because a 40-day source holding 4% of a SKU is not a 40-day supply chain.
+	measure 'Contract Lead Days' =
+			DIVIDE(
+			    SUMX(fact_sourcing, fact_sourcing[contract_lead_days] * fact_sourcing[allocation_share]),
+			    SUMX(fact_sourcing, fact_sourcing[allocation_share])
+			)
+		formatString: #,0.0
+		lineageTag: 1de0182b-4210-57d5-bcf8-ec7eaa5f4d5e
+		displayFolder: Sourcing
+
+	/// How long the surviving qualified alternates take to deliver, i.e. how long the gap lasts.
+	measure 'Switch Lead Days' = AVERAGE(country_exposure[Switch lead (days)])
+		formatString: #,0.0
+		lineageTag: 18d21e8f-10d1-5893-a329-8406828c2f07
+		displayFolder: Sourcing
+
+	/// Reddens the origin carrying the most COGS.
+	measure 'Country Exposure Colour' =
+			VAR Here = [Exposed COGS]
+			VAR Extreme =
+			    CALCULATE(
+			        MAXX(VALUES(country_exposure[Origin]), [Exposed COGS]),
+			        ALLSELECTED()
+			    )
+			RETURN
+			    IF(Here = Extreme, "#FF5C7A", "#454A82")
+		lineageTag: f3381362-7543-5be3-a079-2ac342049a73
+		displayFolder: Sourcing
+
+
+	/// Card subtitle: a count of single-source SKUs needs its base.
+	measure 'Single-Source Reference' = "of " & FORMAT([Sourced SKUs], "#,0") & " SKUs   " & FORMAT([Approved Sources], "#,0") & " approved awards"
+		lineageTag: bc982568-8bf4-5aa0-86e0-5fb8156a1658
+		displayFolder: Sourcing
+
+	/// Card subtitle for country concentration.
+	measure 'Concentration Reference' = "Award HHI " & FORMAT([Award HHI], "#,0") & "   over " & FORMAT(DISTINCTCOUNT(country_exposure[Origin]), "0") & " origins"
+		lineageTag: b14aa173-ca23-5577-b137-8d15d7c4869c
+		displayFolder: Sourcing
+
+	/// Card subtitle for contract lead time.
+	measure 'Lead Time Reference' = "Switching adds " & FORMAT([Switch Lead Days], "#,0.0") & " days"
+		lineageTag: 3dae8d21-d59e-5ad6-9eaa-23c093d963c2
+		displayFolder: Sourcing
+
+	/// The sourcing headline as a deterministic sentence, so the page states its own conclusion rather than leaving it to be inferred.
+	measure 'Sourcing Insight' =
+			VAR Worst =
+			    TOPN(1, ALL(country_exposure), country_exposure[Exposed COGS], DESC)
+			VAR WorstCountry = MAXX(Worst, country_exposure[Origin])
+			VAR WorstShare = MAXX(Worst, country_exposure[Share of COGS])
+			VAR WorstStranded = MAXX(Worst, country_exposure[Stranded SKUs])
+			VAR WorstSwitch = MAXX(Worst, country_exposure[Switch lead (days)])
+			RETURN
+			    FORMAT([Single-Source SKUs], "#,0") & " of " & FORMAT([Sourced SKUs], "#,0")
+			        & " SKUs have a single approved source. "
+			        & WorstCountry & " carries " & FORMAT(WorstShare, "0.0%")
+			        & " of COGS: if that lane closed, " & FORMAT(WorstStranded, "#,0")
+			        & " SKUs would have no qualified alternate and the rest would wait "
+			        & FORMAT(WorstSwitch, "#,0.0") & " days for the next source."
+		lineageTag: 2b4f44ba-5db6-5882-9cc7-155977480966
+		displayFolder: Sourcing
+
+	/// The published OTIF, read from the same file the tests read.
+	measure 'Perfect Order Rate' = CALCULATE(MAX(perfect_order[Rate]), perfect_order[Measure] = "OTIF")
+		formatString: 0.0%
+		lineageTag: 12c923dc-77e7-532a-bf01-622480687e5a
+		displayFolder: Service
+
+	/// The delivery half of OTIF.
+	measure 'On Time Rate' = CALCULATE(MAX(perfect_order[Rate]), perfect_order[Measure] = "On time")
+		formatString: 0.0%
+		lineageTag: 222e6c7a-343b-587d-a119-a7eebebe3604
+		displayFolder: Service
+
+	/// The quantity half of OTIF, at the 95% fill tolerance.
+	measure 'In Full Rate' = CALCULATE(MAX(perfect_order[Rate]), perfect_order[Measure] = "In full")
+		formatString: 0.0%
+		lineageTag: 9231e016-5429-5c72-a09c-9f9ab8556006
+		displayFolder: Service
+
+	/// Orders in the selected failure class.
+	measure 'Failure Orders' = SUM(perfect_order_failures[Orders])
+		formatString: #,0
+		lineageTag: 1280b77c-d4e8-5c6c-9a6d-48e48d984244
+		displayFolder: Service
+
+	/// Reddens whichever failure mode is actually the biggest.
+	measure 'Failure Colour' =
+			VAR Here = [Failure Orders]
+			VAR Extreme =
+			    CALCULATE(
+			        MAXX(VALUES(perfect_order_failures[Failure]), [Failure Orders]),
+			        ALLSELECTED()
+			    )
+			RETURN
+			    IF(Here = Extreme, "#FF5C7A", "#454A82")
+		lineageTag: 92be4fa6-7e81-5b14-9f12-551112b39b33
+		displayFolder: Service
 
 	column Value
 		dataType: int64

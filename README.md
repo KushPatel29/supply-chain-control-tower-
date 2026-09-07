@@ -7,7 +7,7 @@
 ![T-SQL](https://img.shields.io/badge/T--SQL-Star%20Schema-CC2927)
 ![MLflow](https://img.shields.io/badge/MLflow-backtest%20tracking-0194E2?logo=mlflow&logoColor=white)
 ![Delta Lake](https://img.shields.io/badge/Delta%20Lake-10M--row%20benchmarks-00ADD4)
-![Tests](https://img.shields.io/badge/tests-49%20passing-3B8C6E)
+![Tests](https://img.shields.io/badge/tests-81%20passing-3B8C6E)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 In specialty food distribution, every pallet is a countdown timer. A case of
@@ -58,33 +58,94 @@ trust is two dashboards disagreeing on what "OTIF" means.
 
 ## The control tower itself
 
-Four report pages, hand-authored as a Power BI Project (TMDL semantic model
+Five report pages, hand-authored as a Power BI Project (TMDL semantic model
 + PBIR definition) in [`powerbi/pbip/`](powerbi/pbip/) — open
 `SupplyChainControlTower.pbip` in Desktop and hit Refresh.
+
+Every KPI carries its target and the gap to it, the headline figure is
+coloured by a `Status` measure rather than by eye, and each page states its own
+conclusion in a sentence built from DAX — so the narrative cannot drift away
+from the numbers under it.
 
 **Executive Overview** — revenue, margin, OTIF and expiry risk on one screen:
 
 ![Executive Overview](powerbi/screenshots/01-executive-overview.png)
 
+**Global Sourcing Risk** — where the goods actually come from, and what
+happens when a lane closes:
+
+![Global Sourcing Risk](powerbi/screenshots/02-global-sourcing-risk.png)
+
 **Inventory & Expiry Risk** — FEFO banding, value at risk by warehouse, and
 lot-level traceability (the "which customers got batch X" question, answered
 in seconds):
 
-![Inventory & Expiry Risk](powerbi/screenshots/02-inventory-expiry-risk.png)
+![Inventory & Expiry Risk](powerbi/screenshots/03-inventory-expiry-risk.png)
 
 **Fulfillment (OTIF)** — the trend, the by-channel cut, and a customer
 scorecard for the quarterly review:
 
-![Fulfillment OTIF](powerbi/screenshots/03-fulfillment-otif.png)
+![Fulfillment OTIF](powerbi/screenshots/04-fulfillment-otif.png)
 
 **Executive Insights** — OTIF gauge against target, margin waterfall,
 a customer value map, the inventory treemap:
 
-![Executive Insights](powerbi/screenshots/04-executive-insights.png)
+![Executive Insights](powerbi/screenshots/05-executive-insights.png)
 
 And it's live — every slicer cross-filters every visual:
 
 ![Slicer interaction demo](powerbi/screenshots/demo-interaction.gif)
+
+## The half a single-country dashboard cannot see
+
+The order and inventory facts describe one country's distribution network.
+They cannot answer the questions a multinational control tower exists to
+answer: how concentrated is the supply base, which SKUs have nowhere else to
+go, and how long a switch takes when a lane closes. So the model gained an
+approved vendor list — 155 awards across 60 SKUs and 15 suppliers in 9
+countries — and [`analytics/supply_risk.py`](analytics/supply_risk.py) reads
+it.
+
+That layer was added the way the platform says additions happen. The bronze
+contract permits new columns and refuses new tables, and it behaved exactly so:
+the four new `dim_supplier` columns were logged as additive, and the new
+`fact_sourcing` table **halted the pipeline with exit 3** until it was given a
+contract entry and a row in `config/pipeline_metadata.json`. Onboarding a
+source table really is a JSON entry rather than a new notebook, and this is the
+run that proves it. The sourcing layer also draws from its own generator, so
+every existing fact is byte-identical and every number already published from
+them still holds.
+
+**What it found.**
+
+| | |
+|---|---|
+| Single-source SKUs | **3 of 60**, carrying **6.3% of COGS** |
+| Award concentration | median HHI **5,679** per SKU — most SKUs lean hard on one supplier |
+| Origin concentration | HHI **1,620** across 9 countries |
+| Largest origin | **Mexico, 27.2% of COGS** across 36 SKUs |
+| If Mexico's lanes close | **13 SKUs** have no qualified alternate; the rest wait **31.7 days** |
+| Offshore trade-off | 57.5% of COGS at **35.3 days** and price index 0.818, against **14.5 days** at 0.916 nearshore |
+
+The disruption scenario counts a *qualified* alternate only. An unqualified
+supplier needs a requalification programme before it can absorb volume, so
+folding the two together would produce a comforting number that is wrong in
+precisely the situation it exists for.
+
+**And a finding about the service metric itself.** OTIF is an AND of two
+independent failures, and reporting only the product hides which one to fix.
+Split apart, on-time is **89.9%** and in-full is **89.3%** — but the failures
+barely overlap: 1,781 orders were late only, **1,902 were short only**, and just
+234 were both. Short-shipping, not lateness, is the bigger driver of an 80.4%
+OTIF. That is a different corrective action, a different owner, and it is
+invisible until you decompose it. It is asserted as a test, so if the data ever
+makes lateness the bigger driver the claim fails instead of ageing into a lie.
+
+**What it deliberately does not compute.** Landed cost and freight — there is no
+freight, duty or FX data here, and a landed cost built on an invented freight
+rate is a decoration. Cash-to-cash — inventory days exist, DPO and DSO do not,
+and two thirds of a cycle is not a cycle.
+
 
 ## How the data flows
 
@@ -216,7 +277,7 @@ python pipeline/run_pipeline.py --simulate-schema-drift # contract kill: exit 3,
 python pipeline/run_pipeline.py --inject-dq-failure # watch it refuse: exit code 2, no publish
 python pipeline/run_pipeline.py --inject-bad-rows 40 # quarantine demo: isolated, still publishes
 python pipeline/run_pipeline.py --replay-quarantine  # release rows the source fix healed
-pytest tests/ -v                                     # 49 tests: contracts, gate, quarantine, stream, promotion
+pytest tests/ -v                                     # 81 tests: contracts, gate, quarantine, stream, promotion
 ```
 
 ## The forecast bake-off (in which the fancy model loses)
@@ -320,13 +381,16 @@ exactly as they are.
 ## Run it yourself
 
 ```bash
-# 1. generate the data (~30k rows across 7 CSVs)
+# 1. generate the data (~30k rows across 8 CSVs, incl. the approved vendor list)
 cd data_generator && pip install -r requirements.txt && python generate_data.py && cd ..
 
 # 2. run the whole medallion locally — no Fabric account needed
 python pipeline/run_pipeline.py
 
-# 3. open powerbi/pbip/SupplyChainControlTower.pbip in Power BI Desktop, hit Refresh
+# 3. sourcing risk + the perfect-order decomposition the report reads
+python analytics/supply_risk.py
+
+# 4. open powerbi/pbip/SupplyChainControlTower.pbip in Power BI Desktop, hit Refresh
 ```
 
 To run it on real Fabric: free trial at
@@ -370,7 +434,7 @@ the medallion, star schema, DQ gate, and security all carry over unchanged.
 
 ```
 data_generator/     synthetic data generator (Faker + numpy, fixed seed)
-data/bronze/        generated raw CSVs (~30k rows)
+data/bronze/        generated raw CSVs (~30k rows) + fact_sourcing.csv (approved vendor list)
 contracts/          bronze_v1.json — versioned data contract (enforced pre-Bronze)
 config/             pipeline_metadata.json — table behavior as data (keys, Z-order)
 pipeline/           run_pipeline.py — orchestrator: contracts + quarantine + DQ gate
@@ -379,14 +443,16 @@ pipeline/           run_pipeline.py — orchestrator: contracts + quarantine + D
 notebooks/          PySpark: 01-04 medallion -> 05 streaming -> 06 metadata MERGE engine
 analytics/          demand_forecast.py — 4-model rolling-origin backtest + MLflow
                      model_lifecycle.py — drift watch + registry champion promotion
+                     supply_risk.py — sourcing concentration, disruption scenario,
+                     perfect-order decomposition
 benchmarks/         10M-row Delta Lake benchmarks (MERGE, Z-order file skipping)
 sql/                T-SQL DDL for the Gold star schema
 powerbi/            PBIP project (TMDL + PBIR): dynamic RLS + OLS roles,
                      Time Intelligence calculation group, DAX library, build guide
 deploy/             fabric-cicd deployment script + per-environment parameter.yml
 docs/               metric dictionary, pipeline spec, MODEL_OPTIMIZATION.md, DEPLOYMENT.md
-tests/              49 tests: contracts, gate, quarantine, streaming, observability,
-                     promotion policy, KPI rules
+tests/              81 tests: contracts, gate, quarantine, streaming, observability,
+                     promotion policy, KPI rules, sourcing risk, report formatting
 .github/workflows/  ci.yml (pipeline + sabotage proofs) + deploy_fabric.yml (armed CI/CD)
 ```
 

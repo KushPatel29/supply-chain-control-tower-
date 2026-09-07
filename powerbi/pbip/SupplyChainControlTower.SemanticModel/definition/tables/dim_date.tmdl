@@ -61,6 +61,21 @@ table dim_date
 		summarizeBy: none
 		sourceColumn: day_of_week_name
 
+	column year_month
+		dataType: string
+		lineageTag: 856fc0ed-b898-57a0-9921-ef1486e4ffc6
+		summarizeBy: none
+		sourceColumn: year_month
+		sortByColumn: year_month_index
+
+	column year_month_index
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8ce91609-0971-5158-88ad-6441c4c8ce4d
+		summarizeBy: none
+		sourceColumn: year_month_index
+
 	partition dim_date = m
 		mode: import
 		source =
@@ -75,7 +90,11 @@ table dim_date
 				    AddMonth = Table.AddColumn(AddQuarter, "month", each Date.Month([full_date]), Int64.Type),
 				    AddMonthName = Table.AddColumn(AddMonth, "month_name", each Date.MonthName([full_date]), type text),
 				    AddWeek = Table.AddColumn(AddMonthName, "week_of_year", each Date.WeekOfYear([full_date]), Int64.Type),
-				    AddDayName = Table.AddColumn(AddWeek, "day_of_week_name", each Date.DayOfWeekName([full_date]), type text)
+				    AddDayName = Table.AddColumn(AddWeek, "day_of_week_name", each Date.DayOfWeekName([full_date]), type text),
+				    AddYearMonth = Table.AddColumn(AddDayName, "year_month",
+				        each Date.ToText([full_date], "yyyy-MM"), type text),
+				    AddYearMonthIndex = Table.AddColumn(AddYearMonth, "year_month_index",
+				        each Date.Year([full_date]) * 12 + Date.Month([full_date]), Int64.Type)
 				in
-				    AddDayName
+				    AddYearMonthIndex
 

@@ -36,7 +36,11 @@
     "dim_supplier": {
       "supplier_id": "integer",
       "supplier_name": "string",
-      "region": "string"
+      "region": "string",
+      "country": "string",
+      "sourcing_bloc": "string",
+      "supplier_tier": "string",
+      "is_qualified_alternate": "integer"
     },
     "dim_warehouse": {
       "warehouse_id": "integer",
@@ -64,6 +68,16 @@
       "shipped_date": "string",
       "unit_price": "number",
       "unit_cost": "number"
+    },
+    "fact_sourcing": {
+      "product_id": "integer",
+      "supplier_id": "integer",
+      "allocation_share": "number",
+      "contract_lead_days": "integer",
+      "lead_time_sigma_days": "number",
+      "moq_units": "integer",
+      "price_index": "number",
+      "is_primary": "integer"
     }
   }
 }

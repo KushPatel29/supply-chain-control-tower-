@@ -1,0 +1,70 @@
+/// Approved vendor list: which suppliers may serve each SKU, on what award share and contract lead time. The table the sourcing-risk analysis runs on.
+table fact_sourcing
+	lineageTag: 9f58942d-77b2-5903-a896-c8d0440781d8
+
+	column product_id
+		dataType: int64
+		formatString: 0
+		lineageTag: f0729ed3-2cf0-5adf-bc7a-7ef421ad1972
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column supplier_id
+		dataType: int64
+		formatString: 0
+		lineageTag: 1c2f3ad9-3c59-5720-b7fb-235affae5a0d
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+	column allocation_share
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 5cb4cd8b-12d8-5bc4-bf56-87a296227e1a
+		summarizeBy: none
+		sourceColumn: allocation_share
+
+	column contract_lead_days
+		dataType: int64
+		formatString: 0
+		lineageTag: 3ef75194-d31c-56ba-bdda-da2a783fa091
+		summarizeBy: none
+		sourceColumn: contract_lead_days
+
+	column lead_time_sigma_days
+		dataType: double
+		formatString: 0.0
+		lineageTag: 0eb111c8-0c59-550a-910d-5cd91882ade0
+		summarizeBy: none
+		sourceColumn: lead_time_sigma_days
+
+	column moq_units
+		dataType: int64
+		formatString: #,0
+		lineageTag: b479c78a-04f6-5b2a-af14-412f00bbb5c9
+		summarizeBy: none
+		sourceColumn: moq_units
+
+	column price_index
+		dataType: double
+		formatString: 0.000
+		lineageTag: 08ab0f64-fe0f-5970-82aa-293225e78add
+		summarizeBy: none
+		sourceColumn: price_index
+
+	column is_primary
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 8e41be70-9ee3-5812-bf13-426103fa3b4d
+		summarizeBy: none
+		sourceColumn: is_primary
+
+	partition fact_sourcing = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(DataPath & "\fact_sourcing.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"product_id", Int64.Type}, {"supplier_id", Int64.Type}, {"allocation_share", type number}, {"contract_lead_days", Int64.Type}, {"lead_time_sigma_days", type number}, {"moq_units", Int64.Type}, {"price_index", type number}, {"is_primary", Int64.Type}})
+				in
+				    Typed

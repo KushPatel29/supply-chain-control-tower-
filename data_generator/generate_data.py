@@ -183,6 +183,108 @@ def gen_fact_orders(products, customers, warehouses, lots):
     return pd.DataFrame(rows)
 
 
+
+# ---------------------------------------------------------------------------
+# Global sourcing layer
+#
+# The order and inventory facts above describe one country's distribution
+# network. What they cannot describe is where the goods come FROM, and that is
+# the half an MNC control tower is actually built to watch: award concentration,
+# single-source SKUs, country exposure, and how long a switch would take when a
+# lane closes.
+#
+# This layer is ADDITIVE by design. The bronze contract allows new columns
+# ("additive_change: allowed"), and it draws from its OWN generator so the
+# existing RNG stream is untouched - dim_lot, fact_orders and every number
+# already published from them stay byte-identical.
+# ---------------------------------------------------------------------------
+
+SOURCING_SEED = 20260907
+
+# country -> (bloc, transit days door-to-door, transit sigma, cost index)
+# Transit is the dominant term in an offshore lead time and the reason a cheaper
+# unit price is not automatically a cheaper supply.
+ORIGINS = {
+    "Canada":      ("North America", 4, 1.0, 1.00),
+    "USA":         ("North America", 6, 1.5, 0.97),
+    "Mexico":      ("North America", 12, 3.0, 0.88),
+    "Chile":       ("South America", 26, 5.0, 0.83),
+    "Brazil":      ("South America", 29, 6.0, 0.81),
+    "Spain":       ("Europe", 24, 4.0, 0.92),
+    "Poland":      ("Europe", 27, 5.0, 0.86),
+    "Turkiye":     ("Europe", 30, 6.0, 0.84),
+    "Thailand":    ("Asia Pacific", 38, 7.0, 0.74),
+    "Vietnam":     ("Asia Pacific", 40, 8.0, 0.72),
+    "China":       ("Asia Pacific", 36, 7.0, 0.70),
+    "India":       ("Asia Pacific", 41, 8.0, 0.73),
+    "New Zealand": ("Asia Pacific", 33, 5.0, 0.95),
+}
+
+
+def gen_sourcing(products: pd.DataFrame, suppliers: pd.DataFrame):
+    """Approved vendor list: who may supply each SKU, and on what terms.
+
+    Award shares are deliberately Pareto rather than uniform. A supply base
+    where every SKU has a dozen interchangeable sources has no risk to measure
+    and does not resemble any real one; a real AVL has a long tail of
+    dual-sourced items and a dangerous handful that are single-sourced.
+    """
+    rng = np.random.default_rng(SOURCING_SEED)
+    names = list(ORIGINS)
+
+    # Supplier profile. Tier 1 are strategic partners with more awards.
+    countries = rng.choice(names, size=len(suppliers),
+                           p=_origin_weights(names))
+    tiers = rng.choice(["Tier 1", "Tier 2", "Tier 3"], size=len(suppliers),
+                       p=[0.27, 0.40, 0.33])
+    suppliers = suppliers.copy()
+    suppliers["country"] = countries
+    suppliers["sourcing_bloc"] = [ORIGINS[c][0] for c in countries]
+    suppliers["supplier_tier"] = tiers
+    # A qualified alternate can absorb volume; an unqualified one needs a
+    # requalification programme before it can, which is why the scenario
+    # analysis counts them separately.
+    suppliers["is_qualified_alternate"] = np.where(tiers == "Tier 3", 0, 1)
+
+    rows = []
+    for pid in products["product_id"]:
+        # 1-4 approved sources, weighted so single-sourcing is a real minority
+        # rather than an impossibility.
+        n = int(rng.choice([1, 2, 3, 4], p=[0.15, 0.40, 0.30, 0.15]))
+        chosen = rng.choice(suppliers["supplier_id"].to_numpy(), size=n, replace=False)
+        # Dirichlet gives a primary source with a genuine majority share.
+        shares = rng.dirichlet(np.full(n, 0.9))
+        shares = np.round(shares / shares.sum(), 4)
+        shares[-1] = round(1.0 - shares[:-1].sum(), 4)
+        for supplier_id, share in zip(chosen, shares):
+            country = suppliers.loc[suppliers.supplier_id == supplier_id, "country"].iloc[0]
+            transit, sigma, cost_index = ORIGINS[country][1:]
+            # Contract lead time = transit + the supplier's own processing.
+            lead = int(round(transit + rng.normal(5, 1.5)))
+            rows.append({
+                "product_id": int(pid),
+                "supplier_id": int(supplier_id),
+                "allocation_share": float(share),
+                "contract_lead_days": max(2, lead),
+                "lead_time_sigma_days": round(float(sigma), 1),
+                "moq_units": int(rng.choice([100, 250, 500, 1000, 2500])),
+                "price_index": round(float(cost_index * rng.normal(1.0, 0.04)), 3),
+                "is_primary": 0,
+            })
+    sourcing = pd.DataFrame(rows)
+    primary = sourcing.groupby("product_id")["allocation_share"].idxmax()
+    sourcing.loc[primary, "is_primary"] = 1
+    return suppliers, sourcing
+
+
+def _origin_weights(names):
+    """Weight the supply base towards nearshore, with a real offshore tail."""
+    w = np.array([3.0 if ORIGINS[n][0] == "North America" else
+                  1.6 if ORIGINS[n][0] == "Europe" else
+                  1.4 if ORIGINS[n][0] == "Asia Pacific" else 1.0
+                  for n in names])
+    return w / w.sum()
+
 def main():
     print("Generating dimension tables...")
     products = gen_dim_product()
@@ -199,9 +301,14 @@ def main():
     print("Generating orders...")
     orders = gen_fact_orders(products, customers, warehouses, lots)
 
+    # Sourcing is generated last and from its own RNG, so nothing above shifts.
+    print("Generating global sourcing layer (approved vendor list)...")
+    suppliers, sourcing = gen_sourcing(products, suppliers)
+
     tables = {
         "dim_product": products,
         "dim_supplier": suppliers,
+        "fact_sourcing": sourcing,
         "dim_warehouse": warehouses,
         "dim_customer": customers,
         "dim_lot": lots,

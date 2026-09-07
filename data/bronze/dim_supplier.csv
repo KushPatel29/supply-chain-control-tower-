@@ -1,16 +1,16 @@
-supplier_id,supplier_name,region
-1,Blair PLC,Alberta
-2,Dudley Group,Quebec
-3,Arnold Ltd,BC Interior
-4,"Mcclure, Ward and Lee",BC Interior
-5,Williams and Sons,Alberta
-6,Galloway-Wyatt,BC Interior
-7,James Group,BC Lower Mainland
-8,"Flowers, Martin and Kelly",Quebec
-9,"Adams, Zuniga and Wong",Ontario
-10,"Reid, Ferguson and Sanchez",BC Interior
-11,Gray-Mayo,BC Lower Mainland
-12,"Watts, Robinson and Nguyen",Ontario
-13,Perez Inc,Quebec
-14,Morales-Jones,Ontario
-15,"Walter, Edwards and Rios",BC Lower Mainland
+supplier_id,supplier_name,region,country,sourcing_bloc,supplier_tier,is_qualified_alternate
+1,Blair PLC,Alberta,USA,North America,Tier 3,0
+2,Dudley Group,Quebec,Spain,Europe,Tier 3,0
+3,Arnold Ltd,BC Interior,Poland,Europe,Tier 1,1
+4,"Mcclure, Ward and Lee",BC Interior,Brazil,South America,Tier 3,0
+5,Williams and Sons,Alberta,Mexico,North America,Tier 2,1
+6,Galloway-Wyatt,BC Interior,Mexico,North America,Tier 2,1
+7,James Group,BC Lower Mainland,Vietnam,Asia Pacific,Tier 1,1
+8,"Flowers, Martin and Kelly",Quebec,Thailand,Asia Pacific,Tier 1,1
+9,"Adams, Zuniga and Wong",Ontario,Thailand,Asia Pacific,Tier 3,0
+10,"Reid, Ferguson and Sanchez",BC Interior,India,Asia Pacific,Tier 3,0
+11,Gray-Mayo,BC Lower Mainland,Mexico,North America,Tier 2,1
+12,"Watts, Robinson and Nguyen",Ontario,Brazil,South America,Tier 2,1
+13,Perez Inc,Quebec,Canada,North America,Tier 2,1
+14,Morales-Jones,Ontario,Mexico,North America,Tier 3,0
+15,"Walter, Edwards and Rios",BC Lower Mainland,Spain,Europe,Tier 1,1

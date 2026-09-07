@@ -1,4 +1,5 @@
 table 'Time Intelligence'
+	lineageTag: c984a34b-b41e-4410-8c67-b51713519e89
 
 	/// One slicer switches every measure between period views - the calculation-group pattern that replaces N x 6 duplicated time-intelligence measures.
 	calculationGroup
@@ -22,6 +23,7 @@ table 'Time Intelligence'
 
 	column 'Time Intelligence'
 		dataType: string
+		lineageTag: 8ad42865-cb7b-4dd2-bf84-11f72e63baeb
 
 	partition 'Partition_Time Intelligence' = calculationGroup
 

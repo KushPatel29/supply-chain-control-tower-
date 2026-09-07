@@ -20,13 +20,38 @@ table dim_supplier
 		summarizeBy: none
 		sourceColumn: region
 
+	column country
+		dataType: string
+		lineageTag: 195df1d2-632f-521a-88eb-267d487a1c6a
+		summarizeBy: none
+		sourceColumn: country
+
+	column sourcing_bloc
+		dataType: string
+		lineageTag: 029f3d17-eedc-50c0-baa7-76c8809d2b91
+		summarizeBy: none
+		sourceColumn: sourcing_bloc
+
+	column supplier_tier
+		dataType: string
+		lineageTag: 33ac3424-5394-555f-82bb-c819ff9b355c
+		summarizeBy: none
+		sourceColumn: supplier_tier
+
+	column is_qualified_alternate
+		dataType: int64
+		formatString: 0
+		lineageTag: 29f2fb93-0a43-5f50-bb6e-21590773bdd4
+		summarizeBy: none
+		sourceColumn: is_qualified_alternate
+
 	partition dim_supplier = m
 		mode: import
 		source =
 				let
 				    Source = Csv.Document(File.Contents(DataPath & "\dim_supplier.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
-				    Typed = Table.TransformColumnTypes(Promoted, {{"supplier_id", Int64.Type}, {"supplier_name", type text}, {"region", type text}})
+				    Typed = Table.TransformColumnTypes(Promoted, {{"supplier_id", Int64.Type}, {"supplier_name", type text}, {"region", type text}, {"country", type text}, {"sourcing_bloc", type text}, {"supplier_tier", type text}, {"is_qualified_alternate", Int64.Type}})
 				in
 				    Typed
 

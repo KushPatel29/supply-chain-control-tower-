@@ -1,0 +1,116 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.0.0/schema.json",
+  "name": "visual057",
+  "position": {
+    "x": 660,
+    "y": 148,
+    "z": 1000,
+    "height": 450,
+    "width": 600,
+    "tabOrder": 1000
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "drillFilterOtherVisuals": true,
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "country_exposure"
+                    }
+                  },
+                  "Property": "Origin"
+                }
+              },
+              "queryRef": "country_exposure.Origin",
+              "nativeQueryRef": "Origin"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "country_exposure"
+                    }
+                  },
+                  "Property": "Bloc"
+                }
+              },
+              "queryRef": "country_exposure.Bloc",
+              "nativeQueryRef": "Bloc"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "country_exposure"
+                    }
+                  },
+                  "Property": "SKUs supplied"
+                }
+              },
+              "queryRef": "country_exposure.SKUs supplied",
+              "nativeQueryRef": "SKUs supplied"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "country_exposure"
+                    }
+                  },
+                  "Property": "Stranded SKUs"
+                }
+              },
+              "queryRef": "country_exposure.Stranded SKUs",
+              "nativeQueryRef": "Stranded SKUs"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "country_exposure"
+                    }
+                  },
+                  "Property": "Switch lead (days)"
+                }
+              },
+              "queryRef": "country_exposure.Switch lead (days)",
+              "nativeQueryRef": "Switch lead (days)"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Disruption scenario, origin by origin'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

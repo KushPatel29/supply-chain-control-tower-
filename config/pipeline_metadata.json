@@ -1,46 +1,105 @@
 {
-  "description": "Single source of truth for table-level pipeline behavior. The local orchestrator (pipeline/run_pipeline.py) and the generic Fabric MERGE engine (notebooks/06_metadata_merge.py) both read this file — onboarding source table #501 is a JSON entry, not a new notebook.",
+  "description": "Single source of truth for table-level pipeline behavior. The local orchestrator (pipeline/run_pipeline.py) and the generic Fabric MERGE engine (notebooks/06_metadata_merge.py) both read this file \u2014 onboarding source table #501 is a JSON entry, not a new notebook.",
   "tables": {
     "dim_product": {
-      "natural_key": ["product_id"],
+      "natural_key": [
+        "product_id"
+      ],
       "surrogate_key": "product_key",
-      "merge_keys": ["product_id"],
-      "z_order_cols": ["product_id"]
+      "merge_keys": [
+        "product_id"
+      ],
+      "z_order_cols": [
+        "product_id"
+      ]
     },
     "dim_supplier": {
-      "natural_key": ["supplier_id"],
+      "natural_key": [
+        "supplier_id"
+      ],
       "surrogate_key": "supplier_key",
-      "merge_keys": ["supplier_id"],
-      "z_order_cols": ["supplier_id"]
+      "merge_keys": [
+        "supplier_id"
+      ],
+      "z_order_cols": [
+        "supplier_id"
+      ]
     },
     "dim_warehouse": {
-      "natural_key": ["warehouse_id"],
+      "natural_key": [
+        "warehouse_id"
+      ],
       "surrogate_key": "warehouse_key",
-      "merge_keys": ["warehouse_id"],
-      "z_order_cols": ["warehouse_id"]
+      "merge_keys": [
+        "warehouse_id"
+      ],
+      "z_order_cols": [
+        "warehouse_id"
+      ]
     },
     "dim_customer": {
-      "natural_key": ["customer_id"],
+      "natural_key": [
+        "customer_id"
+      ],
       "surrogate_key": "customer_key",
-      "merge_keys": ["customer_id"],
-      "z_order_cols": ["customer_id"]
+      "merge_keys": [
+        "customer_id"
+      ],
+      "z_order_cols": [
+        "customer_id"
+      ]
     },
     "dim_lot": {
-      "natural_key": ["lot_id"],
+      "natural_key": [
+        "lot_id"
+      ],
       "surrogate_key": "lot_key",
-      "merge_keys": ["lot_id"],
+      "merge_keys": [
+        "lot_id"
+      ],
       "referential_parent": "dim_product",
-      "z_order_cols": ["lot_id"]
+      "z_order_cols": [
+        "lot_id"
+      ]
     },
     "fact_orders": {
-      "merge_keys": ["order_id"],
-      "partition_cols": ["order_date"],
-      "z_order_cols": ["date_key", "product_key"]
+      "merge_keys": [
+        "order_id"
+      ],
+      "partition_cols": [
+        "order_date"
+      ],
+      "z_order_cols": [
+        "date_key",
+        "product_key"
+      ]
     },
     "fact_inventory_snapshot": {
-      "merge_keys": ["lot_id", "snapshot_date"],
-      "partition_cols": ["snapshot_date"],
-      "z_order_cols": ["date_key", "product_key"]
+      "merge_keys": [
+        "lot_id",
+        "snapshot_date"
+      ],
+      "partition_cols": [
+        "snapshot_date"
+      ],
+      "z_order_cols": [
+        "date_key",
+        "product_key"
+      ]
+    },
+    "fact_sourcing": {
+      "natural_key": [
+        "product_id",
+        "supplier_id"
+      ],
+      "surrogate_key": "sourcing_key",
+      "merge_keys": [
+        "product_id",
+        "supplier_id"
+      ],
+      "z_order_cols": [
+        "product_id"
+      ]
     }
   }
 }

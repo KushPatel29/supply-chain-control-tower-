@@ -2,9 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.1.0/schema.json",
   "pageOrder": [
     "section_exec_overview",
+    "section_sourcing_risk",
     "section_inventory_risk",
     "section_otif",
     "section_exec_insights"
   ],
-  "activePageName": "section_exec_insights"
+  "activePageName": "section_exec_overview"
 }

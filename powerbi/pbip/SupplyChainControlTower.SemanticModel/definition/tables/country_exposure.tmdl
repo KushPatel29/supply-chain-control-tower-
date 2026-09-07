@@ -1,0 +1,74 @@
+/// Per-origin COGS exposure and the disruption scenario, published by analytics/supply_risk.py so the report and the tests read one source.
+table country_exposure
+	lineageTag: 9c26154f-5c5a-59f3-89af-a74998b54656
+
+	column 'Origin'
+		dataType: string
+		lineageTag: 2c0b2bba-e804-5ce4-b28b-d2ae92f32c38
+		summarizeBy: none
+		sourceColumn: country
+
+	column 'Bloc'
+		dataType: string
+		lineageTag: a4e5ab36-1b98-548d-8ffd-d83719827960
+		summarizeBy: none
+		sourceColumn: bloc
+
+	column 'Suppliers'
+		dataType: int64
+		formatString: 0
+		lineageTag: e642d662-9f6e-512d-b0e9-83bf02e4ef66
+		summarizeBy: none
+		sourceColumn: suppliers
+
+	column 'SKUs supplied'
+		dataType: int64
+		formatString: 0
+		lineageTag: 4a3ff4d0-369e-57b1-b7ab-3fa346d76d27
+		summarizeBy: none
+		sourceColumn: skus_supplied
+
+	column 'Exposed COGS'
+		dataType: double
+		formatString: \$#,0
+		lineageTag: b0f10cc9-928a-5749-aa2c-185f50b6f048
+		summarizeBy: none
+		sourceColumn: exposed_cogs
+
+	column 'Share of COGS'
+		dataType: double
+		formatString: 0.0%
+		lineageTag: e4d79e93-23a3-52f6-8af2-3dfed05d3ac2
+		summarizeBy: none
+		sourceColumn: exposed_share
+
+	column 'Stranded SKUs'
+		dataType: int64
+		formatString: 0
+		lineageTag: c053e502-4991-5d28-8ffc-2ddbb1370bab
+		summarizeBy: none
+		sourceColumn: stranded_skus
+
+	column 'Stranded COGS'
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 5c8fcdae-2759-51c2-8360-b80546338cb7
+		summarizeBy: none
+		sourceColumn: stranded_cogs
+
+	column 'Switch lead (days)'
+		dataType: double
+		formatString: 0.0
+		lineageTag: b138cd65-6cb8-50f3-bd29-e4ae3111f293
+		summarizeBy: none
+		sourceColumn: mean_switch_lead_days
+
+	partition country_exposure = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\country_exposure.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"country", type text}, {"bloc", type text}, {"suppliers", Int64.Type}, {"skus_supplied", Int64.Type}, {"exposed_cogs", type number}, {"exposed_share", type number}, {"stranded_skus", Int64.Type}, {"stranded_cogs", type number}, {"mean_switch_lead_days", type number}})
+				in
+				    Typed

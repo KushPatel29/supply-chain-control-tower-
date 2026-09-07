@@ -3,3 +3,8 @@ expression DataPath = "C:\Users\kush2\Claude\portfolio-projects\supply-chain-con
 
 	annotation PBI_ResultType = Text
 
+
+expression AnalyticsPath = "C:\Users\kush2\Claude\portfolio-projects\supply-chain-control-tower\analytics\output" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: ef69fe33-6524-5b5f-89ba-26721fb4332d
+
+	annotation PBI_ResultType = Text

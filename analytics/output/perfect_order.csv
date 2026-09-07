@@ -1,0 +1,4 @@
+measure,orders,rate,mean_days_late
+On time,17985,0.8992,
+In full,17864,0.8932,
+OTIF,16083,0.8042,3.05

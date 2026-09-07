@@ -1,0 +1,4 @@
+measure,orders,rate
+Late only,1781,0.089
+Short only,1902,0.0951
+Late and short,234,0.0117

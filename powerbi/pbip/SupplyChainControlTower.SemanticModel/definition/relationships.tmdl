@@ -37,3 +37,11 @@ relationship a1000001-0000-4000-8000-000000000009
 relationship a1000001-0000-4000-8000-000000000010
 	fromColumn: dim_lot.supplier_id
 	toColumn: dim_supplier.supplier_id
+
+relationship 1c7f51cd-482f-5583-9511-30db2998b23d
+	fromColumn: fact_sourcing.product_id
+	toColumn: dim_product.product_id
+
+relationship 9ba5d2f5-e1ff-500b-8e7d-7a1666a71399
+	fromColumn: fact_sourcing.supplier_id
+	toColumn: dim_supplier.supplier_id

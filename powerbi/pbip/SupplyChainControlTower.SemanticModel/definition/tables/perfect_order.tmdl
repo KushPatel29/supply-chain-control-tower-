@@ -1,0 +1,40 @@
+/// OTIF split into the two failures it hides, and the Pareto of which failure actually happened.
+table perfect_order
+	lineageTag: 0e721297-b145-59ac-a652-80daa906cf06
+
+	column 'Measure'
+		dataType: string
+		lineageTag: 5ce5e616-8860-5ddb-a012-a8525e12d54d
+		summarizeBy: none
+		sourceColumn: measure
+
+	column 'Orders'
+		dataType: int64
+		formatString: #,0
+		lineageTag: 5a864606-0f61-5f51-b28d-0bd1d1e87d4b
+		summarizeBy: none
+		sourceColumn: orders
+
+	column 'Rate'
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 7a940854-f500-5e7f-8694-f36bee2add94
+		summarizeBy: none
+		sourceColumn: rate
+
+	column 'Mean days late'
+		dataType: double
+		formatString: 0.0
+		lineageTag: 18e812c4-71cf-5d3a-baa7-2c8ee1128f80
+		summarizeBy: none
+		sourceColumn: mean_days_late
+
+	partition perfect_order = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\perfect_order.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"measure", type text}, {"orders", Int64.Type}, {"rate", type number}, {"mean_days_late", type number}})
+				in
+				    Typed
