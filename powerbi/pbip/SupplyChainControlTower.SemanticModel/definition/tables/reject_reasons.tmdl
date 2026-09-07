@@ -1,0 +1,54 @@
+/// Why receipts were rejected, by units and by money. Ranked on value, because the reason that happens most often is rarely the one that costs most.
+table reject_reasons
+	lineageTag: 89e0ced7-5996-5def-a4a8-840065c7c5ae
+
+	column reject_reason
+		dataType: string
+		lineageTag: 5b81df29-1880-5cd3-be16-c165e8a10e09
+		summarizeBy: none
+		sourceColumn: reject_reason
+
+	column lines
+		dataType: int64
+		formatString: #,0
+		lineageTag: 5a5c2810-d630-542b-98c8-9541077adb02
+		summarizeBy: none
+		sourceColumn: lines
+
+	column units
+		dataType: int64
+		formatString: #,0
+		lineageTag: 30d9f963-7e54-5685-a551-bd6295f0b628
+		summarizeBy: none
+		sourceColumn: units
+
+	column value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 0f8165e9-57b4-52a6-bfc8-ad72a993a99b
+		summarizeBy: none
+		sourceColumn: value
+
+	column share_of_value
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 76b33642-baf3-5614-9534-bfe56b74b68f
+		summarizeBy: none
+		sourceColumn: share_of_value
+
+	column cumulative_share
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 3733a1d4-cc05-53a7-a467-0d9156382b55
+		summarizeBy: none
+		sourceColumn: cumulative_share
+
+	partition reject_reasons = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\reject_reasons.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"reject_reason", type text}, {"lines", Int64.Type}, {"units", Int64.Type}, {"value", type number}, {"share_of_value", type number}, {"cumulative_share", type number}})
+				in
+				    Typed

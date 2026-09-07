@@ -1,0 +1,55 @@
+/// What each cycle service level costs in safety stock and buys in fill rate. The curve is steeply concave, which is the whole reason a service target should never be quoted without it.
+table service_exchange_curve
+	lineageTag: f519c6ad-16fd-5e5b-8441-663b9bc17c15
+
+	column service_level
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 7f76f898-8c63-5c5f-a61d-37b3475a5b12
+		summarizeBy: none
+		sourceColumn: service_level
+
+	column z
+		dataType: double
+		formatString: 0.00
+		lineageTag: 71768800-663c-5db8-9992-b9529868cea0
+		summarizeBy: none
+		sourceColumn: z
+
+	column safety_stock_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 9bf48856-f493-5330-9017-d9c2f0245ebe
+		summarizeBy: none
+		sourceColumn: safety_stock_value
+
+	column vs_current_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 75936286-764a-5ff2-aa32-fbacde2bcfaa
+		summarizeBy: none
+		sourceColumn: vs_current_value
+
+	column fill_units
+		dataType: double
+		formatString: 0.00%
+		lineageTag: 9f02db56-cef3-5057-ba3f-47c3843b9ab1
+		summarizeBy: none
+		sourceColumn: fill_units
+
+	column fill_revenue
+		dataType: double
+		formatString: 0.00%
+		lineageTag: 995142ea-3df8-55b7-aaca-3fcbefcdf3b7
+		summarizeBy: none
+		sourceColumn: fill_revenue
+
+	partition service_exchange_curve = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\service_exchange_curve.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"service_level", type number}, {"z", type number}, {"safety_stock_value", type number}, {"vs_current_value", type number}, {"fill_units", type number}, {"fill_revenue", type number}})
+				in
+				    Typed

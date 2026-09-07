@@ -42,3 +42,19 @@ ref table inventory_position
 ref table transfer_opportunities
 
 ref table inventory_trend
+
+ref table supplier_scorecard
+
+ref table award_shift_candidates
+
+ref table reject_reasons
+
+ref table service_exchange_curve
+
+ref table service_policy_options
+
+ref table service_policy_by_class
+
+ref table supplier_headline
+
+ref table service_headline

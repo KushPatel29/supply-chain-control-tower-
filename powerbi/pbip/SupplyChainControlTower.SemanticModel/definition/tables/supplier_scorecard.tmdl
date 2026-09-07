@@ -1,0 +1,228 @@
+/// Measured supplier performance from fact_purchase_orders: delivery, quality, cost and responsiveness, each scored against a published target rather than against the rest of the panel. The contractual supplier_tier is carried for comparison and is never an input. Published by analytics/supplier_scorecard.py.
+table supplier_scorecard
+	lineageTag: 5c95d1b3-164d-5b1b-9fbc-51c858bf9bee
+
+	column supplier_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b73f5718-0acb-5602-8552-e0342ac57ae3
+		summarizeBy: none
+		sourceColumn: supplier_id
+
+	column supplier_name
+		dataType: string
+		lineageTag: b1e80216-ef36-5bdc-b49f-f70ec6167dbc
+		summarizeBy: none
+		sourceColumn: supplier_name
+
+	column country
+		dataType: string
+		lineageTag: f45e2cfe-c2b3-5eec-8205-9dab28b98156
+		summarizeBy: none
+		sourceColumn: country
+
+	column sourcing_bloc
+		dataType: string
+		lineageTag: 27c95a0d-580b-5efa-8a38-8f09912375c5
+		summarizeBy: none
+		sourceColumn: sourcing_bloc
+
+	column supplier_tier
+		dataType: string
+		lineageTag: 89dbc7b7-1e68-52ee-a511-b5a449b8ff2e
+		summarizeBy: none
+		sourceColumn: supplier_tier
+
+	column measured_band
+		dataType: string
+		lineageTag: 4ce9b1c3-19bf-5dc0-8159-1f0f321bcda6
+		summarizeBy: none
+		sourceColumn: measured_band
+
+	column measured_rank
+		dataType: int64
+		formatString: 0
+		lineageTag: 99465cb7-ca03-5d8c-adea-0f2177b5029e
+		summarizeBy: none
+		sourceColumn: measured_rank
+
+	column is_qualified_alternate
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 56f6362f-94cf-54fa-abd7-584292591bd6
+		summarizeBy: none
+		sourceColumn: is_qualified_alternate
+
+	column tier_matches_measurement
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: d69d09d8-db5b-521c-bff3-868b8dbe3d88
+		summarizeBy: none
+		sourceColumn: tier_matches_measurement
+
+	column po_lines
+		dataType: int64
+		formatString: #,0
+		lineageTag: b29ad53b-20e0-5be5-904f-14acee88d917
+		summarizeBy: none
+		sourceColumn: po_lines
+
+	column units_ordered
+		dataType: int64
+		formatString: #,0
+		lineageTag: 73b1a59b-ecdb-596a-a000-5fcf914bd612
+		summarizeBy: none
+		sourceColumn: units_ordered
+
+	column units_received
+		dataType: int64
+		formatString: #,0
+		lineageTag: 3f993243-a293-5c49-bcae-3ff6d88f9217
+		summarizeBy: none
+		sourceColumn: units_received
+
+	column units_rejected
+		dataType: int64
+		formatString: #,0
+		lineageTag: 595d7ee8-31f9-5bcd-bdd9-2be1dd97b1b8
+		summarizeBy: none
+		sourceColumn: units_rejected
+
+	column spend
+		dataType: double
+		formatString: \$#,0
+		lineageTag: a7bd3962-d3b4-503f-b1ef-47b68aa24974
+		summarizeBy: none
+		sourceColumn: spend
+
+	column contract_spend
+		dataType: double
+		formatString: \$#,0
+		lineageTag: b75defd1-a068-5366-8bed-7e31b1cd5fa2
+		summarizeBy: none
+		sourceColumn: contract_spend
+
+	column ppv_dollars
+		dataType: double
+		formatString: \$#,0
+		lineageTag: dc64a8c1-d001-5879-93b7-25c6c2f0ed6f
+		summarizeBy: none
+		sourceColumn: ppv_dollars
+
+	column cost_of_poor_quality
+		dataType: double
+		formatString: \$#,0
+		lineageTag: e4010ade-2c99-5b0a-8ec8-0375866accb7
+		summarizeBy: none
+		sourceColumn: cost_of_poor_quality
+
+	column on_time_rate
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 7357bd00-e836-5a9d-8d0a-23b7ebba411f
+		summarizeBy: none
+		sourceColumn: on_time_rate
+
+	column in_full_rate
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 06fb1f95-c001-5643-a6aa-dc1575ea37ce
+		summarizeBy: none
+		sourceColumn: in_full_rate
+
+	column otif_rate
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 0680083f-a4bd-5342-b072-dc0b207a58bc
+		summarizeBy: none
+		sourceColumn: otif_rate
+
+	column reject_rate
+		dataType: double
+		formatString: 0.00%
+		lineageTag: 37ee1107-9827-53cf-aa59-564bc72ebdd8
+		summarizeBy: none
+		sourceColumn: reject_rate
+
+	column ppv_pct
+		dataType: double
+		formatString: 0.0%
+		lineageTag: e4003a33-5166-56ff-bc82-127b61b32271
+		summarizeBy: none
+		sourceColumn: ppv_pct
+
+	column lead_sigma
+		dataType: double
+		formatString: 0.0
+		lineageTag: c14d5e69-54b1-594e-b5d2-499896710488
+		summarizeBy: none
+		sourceColumn: lead_sigma
+
+	column mean_lead_days
+		dataType: double
+		formatString: 0.0
+		lineageTag: 3b23e5cd-f62e-5e06-87a3-44d713c9c171
+		summarizeBy: none
+		sourceColumn: mean_lead_days
+
+	column late_lines
+		dataType: int64
+		formatString: #,0
+		lineageTag: 70a537fd-604b-54ef-9be2-fe37f74e0045
+		summarizeBy: none
+		sourceColumn: late_lines
+
+	column late_p90_days
+		dataType: double
+		formatString: 0.0
+		lineageTag: fa33c504-0f9f-55ba-b837-1e80a91d782b
+		summarizeBy: none
+		sourceColumn: late_p90_days
+
+	column delivery_score
+		dataType: double
+		formatString: 0
+		lineageTag: c6e895ab-7ed8-5657-98c1-a64bab00cb2f
+		summarizeBy: none
+		sourceColumn: delivery_score
+
+	column quality_score
+		dataType: double
+		formatString: 0
+		lineageTag: 29a19ea4-2c5e-5041-ad4c-fc8ee27b7c0e
+		summarizeBy: none
+		sourceColumn: quality_score
+
+	column cost_score
+		dataType: double
+		formatString: 0
+		lineageTag: 8430a98a-40a6-521a-b0c8-3fa59ad4b7b6
+		summarizeBy: none
+		sourceColumn: cost_score
+
+	column responsiveness_score
+		dataType: double
+		formatString: 0
+		lineageTag: 13e9ecdb-1b43-5fc9-bc8e-8c88ec928541
+		summarizeBy: none
+		sourceColumn: responsiveness_score
+
+	column composite_score
+		dataType: double
+		formatString: 0.0
+		lineageTag: 00d5d589-d046-52e2-bc2e-09926020c1ad
+		summarizeBy: none
+		sourceColumn: composite_score
+
+	partition supplier_scorecard = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\supplier_scorecard.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"supplier_id", Int64.Type}, {"po_lines", Int64.Type}, {"units_ordered", Int64.Type}, {"units_received", Int64.Type}, {"units_rejected", Int64.Type}, {"spend", type number}, {"contract_spend", type number}, {"ppv_dollars", type number}, {"cost_of_poor_quality", type number}, {"on_time_rate", type number}, {"in_full_rate", type number}, {"otif_rate", type number}, {"lead_sigma", type number}, {"mean_lead_days", type number}, {"late_lines", Int64.Type}, {"late_p90_days", type number}, {"reject_rate", type number}, {"ppv_pct", type number}, {"delivery_score", type number}, {"quality_score", type number}, {"cost_score", type number}, {"responsiveness_score", type number}, {"composite_score", type number}, {"supplier_name", type text}, {"country", type text}, {"sourcing_bloc", type text}, {"supplier_tier", type text}, {"is_qualified_alternate", Int64.Type}, {"measured_rank", Int64.Type}, {"measured_band", type text}, {"tier_matches_measurement", Int64.Type}})
+				in
+				    Typed

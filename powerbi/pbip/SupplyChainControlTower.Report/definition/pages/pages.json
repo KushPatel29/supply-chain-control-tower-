@@ -3,7 +3,9 @@
   "pageOrder": [
     "section_exec_overview",
     "section_sourcing_risk",
+    "section_supplier_performance",
     "section_network_health",
+    "section_service_economics",
     "section_inventory_risk",
     "section_otif",
     "section_exec_insights"

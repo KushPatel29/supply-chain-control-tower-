@@ -1,0 +1,89 @@
+/// Where the money moves between ABC classes under each allocation, at constant total spend - so the changes net to zero by construction.
+table service_policy_by_class
+	lineageTag: aae89869-9e34-513c-bfd6-8cfd3f248706
+
+	column abc_class
+		dataType: string
+		lineageTag: 4fd2ca2d-e5fc-5554-990a-51547076e3c0
+		summarizeBy: none
+		sourceColumn: abc_class
+
+	column positions
+		dataType: int64
+		formatString: #,0
+		lineageTag: 8bbf8cb0-1e8d-504b-9b08-4ae6bde5a7f2
+		summarizeBy: none
+		sourceColumn: positions
+
+	column skus
+		dataType: int64
+		formatString: #,0
+		lineageTag: cd9d91e7-3fbb-56ab-af2a-d79413efd23e
+		summarizeBy: none
+		sourceColumn: skus
+
+	column value_now
+		dataType: double
+		formatString: \$#,0
+		lineageTag: ce6dd3c5-f334-513a-9068-5e6a501f5278
+		summarizeBy: none
+		sourceColumn: value_now
+
+	column value_ladder
+		dataType: double
+		formatString: \$#,0
+		lineageTag: fd6576df-dde8-5ca0-bc51-34acdd16d64a
+		summarizeBy: none
+		sourceColumn: value_ladder
+
+	column value_optimal_units
+		dataType: double
+		formatString: \$#,0
+		lineageTag: cfea66a9-98d8-516b-80de-5bee7edf6412
+		summarizeBy: none
+		sourceColumn: value_optimal_units
+
+	column service_now
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 2da921c4-4a64-5ed5-9c1c-d81b823784bc
+		summarizeBy: none
+		sourceColumn: service_now
+
+	column service_ladder
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 84fcb323-05bb-54c5-841c-b5afa4d164eb
+		summarizeBy: none
+		sourceColumn: service_ladder
+
+	column service_optimal_units
+		dataType: double
+		formatString: 0.0%
+		lineageTag: b596c9fb-5683-5bed-b28b-993ba44971ea
+		summarizeBy: none
+		sourceColumn: service_optimal_units
+
+	column ladder_change
+		dataType: double
+		formatString: \$#,0
+		lineageTag: a0cb28bd-6ace-510e-b893-5f4f0ad6ddcb
+		summarizeBy: none
+		sourceColumn: ladder_change
+
+	column optimal_change
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 95a1c498-6f51-56d7-bd67-8fa72a8f3d6c
+		summarizeBy: none
+		sourceColumn: optimal_change
+
+	partition service_policy_by_class = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\service_policy_by_class.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"abc_class", type text}, {"positions", Int64.Type}, {"skus", Int64.Type}, {"value_now", type number}, {"value_ladder", type number}, {"value_optimal_units", type number}, {"service_now", type number}, {"service_ladder", type number}, {"service_optimal_units", type number}, {"ladder_change", type number}, {"optimal_change", type number}})
+				in
+				    Typed

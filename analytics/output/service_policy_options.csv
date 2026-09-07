@@ -1,0 +1,5 @@
+policy,safety_stock_value,fill_units,fill_revenue,mean_service_level
+flat 95% (in force),7260290.71,0.9864,0.98641,0.95
+ABC ladder 98/95/90,7260290.71,0.98071,0.98597,0.9291
+optimal for units,7260290.71,0.99314,0.99167,0.9481
+optimal for revenue,7260290.71,0.99216,0.99237,0.9427

@@ -7,7 +7,7 @@
 ![T-SQL](https://img.shields.io/badge/T--SQL-Star%20Schema-CC2927)
 ![MLflow](https://img.shields.io/badge/MLflow-backtest%20tracking-0194E2?logo=mlflow&logoColor=white)
 ![Delta Lake](https://img.shields.io/badge/Delta%20Lake-10M--row%20benchmarks-00ADD4)
-![Tests](https://img.shields.io/badge/tests-193%20passing-3B8C6E)
+![Tests](https://img.shields.io/badge/tests-272%20passing-3B8C6E)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 In specialty food distribution, every pallet is a countdown timer. A case of
@@ -22,7 +22,7 @@ One rule governs everything here: **nothing is claimed that isn't run,
 tested, or measured.** Every push regenerates the data from scratch, streams
 a file drop through the exactly-once ingest, executes the whole pipeline
 through a quarantine split and a data-quality gate that provably blocks bad
-builds, exercises the model-promotion policy, and runs a 49-test suite. The
+builds, exercises the model-promotion policy, and runs a 272-test suite. The
 green badge above covers the failure paths too.
 
 ## The problem, in one walk through the warehouse
@@ -58,7 +58,7 @@ trust is two dashboards disagreeing on what "OTIF" means.
 
 ## The control tower itself
 
-Six report pages, hand-authored as a Power BI Project (TMDL semantic model
+Eight report pages, hand-authored as a Power BI Project (TMDL semantic model
 + PBIR definition) in [`powerbi/pbip/`](powerbi/pbip/) — open
 `SupplyChainControlTower.pbip` in Desktop and hit Refresh.
 
@@ -76,31 +76,181 @@ happens when a lane closes:
 
 ![Global Sourcing Risk](powerbi/screenshots/02-global-sourcing-risk.png)
 
+**Supplier Performance** — the inbound half of the chain: 3,106 purchase
+order lines scored on delivery, quality, cost and responsiveness, each against a
+published target rather than against the rest of the panel. The contractual
+tier is carried beside the measured band and is never an input to the score,
+which is what makes the 9 disagreements a finding instead
+of a restatement:
+
+![Supplier Performance](powerbi/screenshots/03-supplier-performance.png)
+
 **Inventory & Network Health** — the planner's view: position against reorder
 point, the shortfall split nearshore vs offshore across 13 weeks, and the part
 of it a stock transfer covers without a purchase order:
 
-![Inventory & Network Health](powerbi/screenshots/03-inventory-network-health.png)
+![Inventory & Network Health](powerbi/screenshots/04-inventory-network-health.png)
+
+**Service Level Economics** — what the service policy costs and whether the
+same money could buy more of it. The exchange curve, four allocations of an
+identical budget, and the textbook ABC ladder going backwards on unit fill:
+
+![Service Level Economics](powerbi/screenshots/05-service-level-economics.png)
 
 **Inventory & Expiry Risk** — FEFO banding, value at risk by warehouse, and
 lot-level traceability (the "which customers got batch X" question, answered
 in seconds):
 
-![Inventory & Expiry Risk](powerbi/screenshots/04-inventory-expiry-risk.png)
+![Inventory & Expiry Risk](powerbi/screenshots/06-inventory-expiry-risk.png)
 
 **Fulfillment (OTIF)** — the trend, the by-channel cut, and a customer
 scorecard for the quarterly review:
 
-![Fulfillment OTIF](powerbi/screenshots/05-fulfillment-otif.png)
+![Fulfillment OTIF](powerbi/screenshots/07-fulfillment-otif.png)
 
 **Executive Insights** — OTIF gauge against target, margin waterfall,
 a customer value map, the inventory treemap:
 
-![Executive Insights](powerbi/screenshots/06-executive-insights.png)
+![Executive Insights](powerbi/screenshots/08-executive-insights.png)
 
 And it's live — every slicer cross-filters every visual:
 
 ![Slicer interaction demo](powerbi/screenshots/demo-interaction.gif)
+
+## The supplier panel, measured instead of asked
+
+The model had customer orders, lots and a stock position — the outbound side
+and the shelf. It had no record of what was *ordered* from a supplier, when it
+was promised, when it turned up, how much of it was fit to use, or what was
+paid against the contract. Without that there is no supplier performance to
+measure: every supplier had the same 1.9-day inbound lead, the same shelf life
+at receipt and an identical unit cost, so a scorecard built on it would have
+ranked noise and presented it as procurement advice.
+
+So `fact_purchase_orders` was added — 3,106 PO lines across
+15 suppliers and 60 SKUs,
+$82,012,265 of inbound spend, from its own RNG so every existing
+fact stays byte-identical. Each supplier carries latent behaviour it is then
+measured on, and that behaviour is deliberately **not** aligned with its
+contractual tier.
+
+[`analytics/supplier_scorecard.py`](analytics/supplier_scorecard.py) scores
+four dimensions, because a supplier that is cheap and late is a different
+problem from one that is dear and reliable:
+
+| | measured | scored against |
+|---|---|---|
+| **Delivery** | OTIF 73.6% (on time 90.1%, in full 81.9%) | 95% target, 70% floor |
+| **Quality** | 0.66% of units rejected — $567,497 of stock condemned at the gate | 0.5% target, 5% floor |
+| **Cost** | $835,240 **under** contract in aggregate (−1.01%) — but 7 suppliers invoice above theirs, together $1,445,839 | 2% under contract, 5% over |
+| **Responsiveness** | lead-time standard deviation | 2 days target, 12 floor |
+
+**Scored against published anchors, not against each other.** Min-max scaling
+is the usual choice and it is wrong here for a specific reason: it guarantees
+somebody scores 100 and somebody scores 0, so a panel where every supplier is
+failing looks exactly like one where every supplier is excellent. On this panel
+nobody reaches the delivery target and the scale says so — the best composite
+is 67.7 — and the anchors are constants at the top of the
+file, meant to be argued with.
+
+**In full is measured on the accepted quantity.** A pallet that arrives
+complete, on the promised day, of which a fifth is condemned at the gate did
+not fulfil the order. Counting it as OTIF is how a scorecard ends up
+disagreeing with the people receiving the goods.
+
+### Tier is a claim. The score is a measurement.
+
+`dim_supplier` carries a contractual `supplier_tier`, and nothing in the
+scoring reads it — a test shuffles the column and requires that not one score
+moves. It is compared to the measured band only at the end, and
+**9 of 15 suppliers sit in a different
+band than their contract calls them**, covering
+$51,078,133 of spend.
+3 are inverted outright: Adams, Zuniga and Wong, Flowers, Martin and Kelly, Walter, Edwards and Rios.
+Dudley Group scores 38.0 on OTIF of
+63.1% and is the first review to book.
+
+### Where the award does not match the performance
+
+24 SKUs have a qualified alternate scoring 8+ points
+above the incumbent primary, covering $28,633,163 of annual
+spend. Moving all of it would raise the purchase price by
+$393,573 — 11 of
+those SKUs are *cheaper* at the better supplier, so those are free, and the
+rest are a decision with a price on it rather than an instruction. Presenting
+only the savings would be advocacy dressed as analysis.
+
+A further 2
+($942,374) have a qualified alternate that has
+never actually been ordered from for that SKU. There is no price to compare, so
+those columns are blank and the blank is excluded from the headline rather than
+summed in as a NaN — and a live second source nobody uses is itself worth a
+buyer's attention.
+
+The Pareto on why receipts were rejected puts 34% of
+the money on "Temperature excursion in transit", ranked on value rather than on
+frequency: the reason that happens most often is rarely the one that costs
+most.
+
+## Nobody has ever priced the service level
+
+Every one of the 478 SKU × warehouse positions is planned at a
+flat 95% cycle service level. That is the default
+in every planning package on the market, it was set once at implementation, and
+it costs $7,260,291 in safety stock.
+
+[`analytics/service_economics.py`](analytics/service_economics.py) asks three
+questions about it.
+
+**1. What does a point of service actually cost?** The exchange curve is
+steeply concave: the next point costs $467,224 from
+here, and going from 95% to 99% costs $3,007,163. Quoting a
+service target without that curve beside it is quoting a price with no idea
+what is being bought.
+
+The replenishment quantity in the fill-rate arithmetic is the mean quantity
+actually ordered from a supplier, taken from the new purchase-order table. The
+usual move is to assume an EOQ from an invented ordering cost and holding rate,
+which quietly makes the whole answer a function of two numbers somebody
+guessed.
+
+**2. Is the same money buying the most service it could?** Four allocations of
+the identical $7,260,291:
+
+| policy | fill rate (units) | fill rate (revenue) |
+|---|---|---|
+| flat 95%, in force | 98.64% | 98.64% |
+| ABC ladder 98% / 95% / 90% | 98.07% | 98.60% |
+| allocated for units | **99.31%** | — |
+| allocated for revenue | — | **99.24%** |
+
+The textbook ABC ladder is the standard fix, and on this network it **loses**
+0.57 points of unit fill for the same
+money. That is not a defect in the ladder: it protects revenue, and revenue is
+not what a fill rate on units measures — the same ladder moves revenue fill
+only -0.04 points. A flat service level is
+wrong; so is reaching for the standard fix without first saying which of the
+two things you are buying.
+
+Allocating by marginal return — equalising the fill rate bought by the next
+dollar across every position, which the module solves with a Lagrange
+multiplier and a bisection — reaches 99.31%
+(+0.67 pts) for exactly what is being spent
+today. At a *uniform* service level the two objectives agree to
+0.001 of a point,
+which is precisely why a flat policy survives so long: it is never obviously
+wrong under either. They only come apart once the money starts being allocated.
+
+**3. Or take it as cash instead.** Holding the unit fill rate exactly where it
+is needs $6,021,226, releasing
+$1,239,065 of working capital
+(17.1%) at identical service.
+
+Safety stock is recomputed here from King's formula rather than read off the
+planning view's own `safety_stock_target`, and a test asserts the two agree on
+every position to within the half-unit the CSV rounds to — so if
+`service_economics.py` and `generate_data.py` ever stop agreeing about the
+arithmetic, the suite says so instead of an executive finding out.
 
 ## The half a single-country dashboard cannot see
 
@@ -447,7 +597,8 @@ exactly as they are.
 ## Run it yourself
 
 ```bash
-# 1. generate the data (~37k rows across 9 CSVs, incl. the approved vendor list)
+# 1. generate the data (~40k rows across 10 CSVs, incl. the approved vendor
+#    list and the inbound purchase-order ledger)
 cd data_generator && pip install -r requirements.txt && python generate_data.py && cd ..
 
 # 2. run the whole medallion locally — no Fabric account needed
@@ -459,7 +610,13 @@ python analytics/supply_risk.py
 # 4. inventory position vs policy, cover vs lead, and the transfer opportunity
 python analytics/inventory_health.py
 
-# 5. open powerbi/pbip/SupplyChainControlTower.pbip in Power BI Desktop, hit Refresh
+# 5. supplier scorecard: tier vs measured performance, and the award shift
+python analytics/supplier_scorecard.py
+
+# 6. what the service policy costs, and what the same money could buy instead
+python analytics/service_economics.py
+
+# 7. open powerbi/pbip/SupplyChainControlTower.pbip in Power BI Desktop, hit Refresh
 ```
 
 To run it on real Fabric: free trial at
@@ -503,8 +660,10 @@ the medallion, star schema, DQ gate, and security all carry over unchanged.
 
 ```
 data_generator/     synthetic data generator (Faker + numpy, fixed seed)
-data/bronze/        generated raw CSVs (~37k rows) + fact_sourcing.csv (approved
-                     vendor list) + fact_inventory_position.csv (planner's stock position)
+data/bronze/        generated raw CSVs (~40k rows) + fact_sourcing.csv (approved
+                     vendor list) + fact_inventory_position.csv (planner's stock
+                     position) + fact_purchase_orders.csv (the inbound ledger:
+                     ordered, promised, received, rejected, paid)
 contracts/          bronze_v1.json — versioned data contract (enforced pre-Bronze)
 config/             pipeline_metadata.json — table behavior as data (keys, Z-order)
 pipeline/           run_pipeline.py — orchestrator: contracts + quarantine + DQ gate
@@ -517,15 +676,20 @@ analytics/          demand_forecast.py — 4-model rolling-origin backtest + MLf
                      perfect-order decomposition
                      inventory_health.py — position vs policy, cover vs lead,
                      transfer opportunity, 13-week lane drift
+                     supplier_scorecard.py — delivery/quality/cost/responsiveness
+                     against published anchors, tier vs measurement, award shift
+                     service_economics.py — safety-stock exchange curve and a
+                     constant-spend re-allocation by marginal return
 benchmarks/         10M-row Delta Lake benchmarks (MERGE, Z-order file skipping)
 sql/                T-SQL DDL for the Gold star schema
 powerbi/            PBIP project (TMDL + PBIR): dynamic RLS + OLS roles,
                      Time Intelligence calculation group, DAX library, build guide
 deploy/             fabric-cicd deployment script + per-environment parameter.yml
 docs/               metric dictionary, pipeline spec, MODEL_OPTIMIZATION.md, DEPLOYMENT.md
-tests/              193 tests: contracts, gate, quarantine, streaming, observability,
+tests/              272 tests: contracts, gate, quarantine, streaming, observability,
                      promotion policy, KPI rules, sourcing risk, inventory health,
-                     semantic-model binding, report formatting
+                     supplier scorecard, service economics, semantic-model
+                     binding, report formatting
 .github/workflows/  ci.yml (pipeline + sabotage proofs) + deploy_fabric.yml (armed CI/CD)
 ```
 

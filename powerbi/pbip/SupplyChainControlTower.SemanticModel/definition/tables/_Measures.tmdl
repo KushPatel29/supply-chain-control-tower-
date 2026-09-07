@@ -590,6 +590,200 @@ table _Measures
 		lineageTag: 88ce45a9-cddb-5f0a-aa39-7f5f81fcbb81
 		displayFolder: Inventory
 
+	/// Purchase order lines in the measurement window.
+	measure 'PO Lines' = SUM(supplier_headline[po_lines])
+		formatString: #,0
+		lineageTag: fc78d33d-e12e-5243-85e7-55c49a0da005
+		displayFolder: Procurement
+
+	/// Total inbound spend the scorecard is weighted by.
+	measure 'Panel Spend' = SUM(supplier_headline[total_spend])
+		formatString: \$#,0
+		lineageTag: 48caa603-0811-50c9-95c0-60e2ae61e9a7
+		displayFolder: Procurement
+
+	/// On time, in full and fit for use across every line - one row, so it cannot be double-counted by a roll-up.
+	measure 'Panel OTIF' = SUM(supplier_headline[otif_rate])
+		formatString: 0.0%
+		lineageTag: 7db9dac8-c3bd-5308-bd21-3239c02d307e
+		displayFolder: Procurement
+
+	measure 'Panel Reject Rate' = SUM(supplier_headline[reject_rate])
+		formatString: 0.00%
+		lineageTag: 93c98a31-b409-506e-863a-c3e4c6b8b039
+		displayFolder: Procurement
+
+	/// Money spent on stock condemned at the receiving gate.
+	measure 'Panel COPQ' = SUM(supplier_headline[cost_of_poor_quality])
+		formatString: \$#,0
+		lineageTag: 1ecd6348-0588-5c3f-80d3-baf0688ee944
+		displayFolder: Procurement
+
+	measure 'Panel PPV' = SUM(supplier_headline[ppv_dollars])
+		formatString: \$#,0
+		lineageTag: 40d3ed36-8870-582f-ae86-e16f6a0a508b
+		displayFolder: Procurement
+
+	/// The half of the price variance that runs against the buyer, kept separate from the half that runs for it - a net figure near zero hides both.
+	measure 'Overbilled Dollars' = SUM(supplier_headline[overbilled_dollars])
+		formatString: \$#,0
+		lineageTag: 63b7fe79-1736-5e61-8af0-a487bf9c5e18
+		displayFolder: Procurement
+
+	measure 'Panel Mismatches' = SUM(supplier_headline[tier_mismatches])
+		formatString: #,0
+		lineageTag: b73be7ff-d11c-51ae-a0b2-29f4add8b15d
+		displayFolder: Procurement
+
+	measure 'Panel Shift Spend' = SUM(supplier_headline[award_shift_spend])
+		formatString: \$#,0
+		lineageTag: 76d49c6d-7b49-503a-afe5-f77f68900038
+		displayFolder: Procurement
+
+	measure 'COPQ Reference' = FORMAT(SUM(supplier_headline[reject_rate]), "0.00%") & " of units rejected at receipt"
+		lineageTag: ea19123b-0e99-5289-a729-72795b83c49b
+		displayFolder: Procurement
+
+	measure 'PPV Reference' = FORMAT(SUM(supplier_headline[overbilled_suppliers]), "0") & " suppliers invoice above contract, together " & FORMAT(SUM(supplier_headline[overbilled_dollars]), "$#,0")
+		lineageTag: b6171efd-b303-522b-a03d-3c5e83797fdc
+		displayFolder: Procurement
+
+	measure 'Mismatch Reference' = FORMAT(SUM(supplier_headline[tier_mismatches]), "0") & " of " & FORMAT(SUM(supplier_headline[suppliers]), "0") & " suppliers, " & FORMAT(SUM(supplier_headline[spend_under_mismatched_tier]), "$#,0") & " of spend"
+		lineageTag: fea97fdb-da67-535b-be42-ff435467ed4b
+		displayFolder: Procurement
+
+	measure 'Shift Reference' = FORMAT(SUM(supplier_headline[award_shift_skus]), "0") & " SKUs   price impact " & FORMAT(SUM(supplier_headline[award_shift_price_impact]), "$#,0")
+		lineageTag: c3d68ad0-c06c-5224-b223-7d0286a4cd2f
+		displayFolder: Procurement
+
+	/// The procurement headline as a deterministic sentence, so the page states its own conclusion.
+	measure 'Supplier Insight' =
+			VAR vLines = SUM(supplier_headline[po_lines])
+			VAR vOtif = SUM(supplier_headline[otif_rate])
+			VAR vCopq = SUM(supplier_headline[cost_of_poor_quality])
+			VAR vMismatch = SUM(supplier_headline[tier_mismatches])
+			VAR vPanel = SUM(supplier_headline[suppliers])
+			VAR vMismatchSpend = SUM(supplier_headline[spend_under_mismatched_tier])
+			VAR vShiftSpend = SUM(supplier_headline[award_shift_spend])
+			VAR vShiftSkus = SUM(supplier_headline[award_shift_skus])
+			VAR vImpact = SUM(supplier_headline[award_shift_price_impact])
+			VAR vWorst = MAX(supplier_headline[worst_supplier])
+			VAR vWorstScore = SUM(supplier_headline[worst_score])
+			RETURN
+			    FORMAT(vLines, "#,0") & " purchase order lines run at "
+			        & FORMAT(vOtif, "0.0%") & " OTIF against a 95% target, and "
+			        & FORMAT(vCopq, "$#,0") & " of what arrived was condemned at the gate. "
+			        & FORMAT(vMismatch, "0") & " of " & FORMAT(vPanel, "0")
+			        & " suppliers sit in a different band than their contract calls them, covering "
+			        & FORMAT(vMismatchSpend, "$#,0") & " of spend - the tier is never an input "
+			        & "to the score, so that gap is a measurement rather than a restatement. "
+			        & FORMAT(vShiftSkus, "0") & " SKUs (" & FORMAT(vShiftSpend, "$#,0")
+			        & ") have a qualified alternate scoring 8+ points higher; moving all of it "
+			        & "changes the purchase price by " & FORMAT(vImpact, "+$#,0;-$#,0;$0")
+			        & ". " & vWorst & " scores " & FORMAT(vWorstScore, "0.0")
+			        & " and is the first review to book."
+		lineageTag: 68af2ac0-9679-5317-9bc6-983a4c501ff3
+		displayFolder: Procurement
+
+	/// What the flat 95% service level costs in safety stock across all 478 positions.
+	measure 'Policy Investment' = SUM(service_headline[safety_stock_value])
+		formatString: \$#,0
+		lineageTag: 661d2b4b-1f99-55ae-b9e0-aa8d66364b1a
+		displayFolder: Service Economics
+
+	measure 'Policy Fill Now' = SUM(service_headline[fill_units_now])
+		formatString: 0.00%
+		lineageTag: d8c787f3-0952-5b1f-9aaa-7fa28277ca16
+		displayFolder: Service Economics
+
+	/// The slope of the exchange curve where the policy actually sits - the number a service target ought to be argued with.
+	measure 'Cost of a Point' = SUM(service_headline[cost_of_one_more_point])
+		formatString: \$#,0
+		lineageTag: 41117e20-8738-59e7-bd2e-ab9007b47836
+		displayFolder: Service Economics
+
+	/// What a marginal-return allocation frees while holding today's fill rate exactly.
+	measure 'Capital Released' = SUM(service_headline[working_capital_released])
+		formatString: \$#,0
+		lineageTag: a7d4d82c-9b83-56b2-9b86-59fc15b14822
+		displayFolder: Service Economics
+
+	/// Points of unit fill the textbook ABC ladder gains or loses at constant spend. On this network it loses.
+	measure 'Ladder Delta' = SUM(service_headline[ladder_units_change_pts])
+		formatString: +0.00;-0.00;0.00
+		lineageTag: 01cd5162-aa07-57e2-9a40-912cc588646e
+		displayFolder: Service Economics
+
+	measure 'Optimal Delta' = SUM(service_headline[optimal_units_change_pts])
+		formatString: +0.00;-0.00;0.00
+		lineageTag: a07d695f-bf08-51e9-acd0-ec936129e51f
+		displayFolder: Service Economics
+
+	measure 'Investment Reference' = FORMAT(SUM(service_headline[positions]), "#,0") & " positions at a flat " & FORMAT(SUM(service_headline[current_service_level]), "0%") & " cycle service level"
+		lineageTag: 0626a7e6-b083-52f3-9dfa-3661ebc012ef
+		displayFolder: Service Economics
+
+	measure 'Point Reference' = "95% to 99% costs " & FORMAT(SUM(service_headline[cost_of_99_vs_95]), "$#,0")
+		lineageTag: ab2a30c5-78ec-50f1-a3e3-813a731e18ca
+		displayFolder: Service Economics
+
+	measure 'Released Reference' = FORMAT(SUM(service_headline[working_capital_released_pct]), "0.0%") & " of the safety stock, at identical fill"
+		lineageTag: bd86deb1-6805-594f-9958-8e9363918f8f
+		displayFolder: Service Economics
+
+	/// The ladder's defence, on the card that indicts it: it is a revenue heuristic, and it gives up far less on revenue than on units.
+	measure 'Ladder Reference' = "revenue fill moves " & FORMAT(SUM(service_headline[ladder_revenue_change_pts]), "+0.00;-0.00;0.00") & " pts on the same change"
+		lineageTag: bbc361ba-7c7e-5420-8bfb-e5b8e4d05894
+		displayFolder: Service Economics
+
+	/// Green on the best allocation, red on anything that does worse than the policy already in force - which is where the ABC ladder lands.
+	measure 'Policy Highlight' =
+			VAR vBest = CALCULATE(MAX(service_policy_options[fill_units]), ALLSELECTED())
+			VAR vFlat =
+			    CALCULATE(
+			        MAX(service_policy_options[fill_units]),
+			        ALLSELECTED(),
+			        service_policy_options[policy] = "flat 95% (in force)"
+			    )
+			VAR vHere = MAX(service_policy_options[fill_units])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        vHere = vBest, "#3DD68C",
+			        vHere < vFlat, "#FF5C7A",
+			        "#454A82"
+			    )
+		lineageTag: a299b931-7aec-5f38-9932-937f09dd5708
+		displayFolder: Service Economics
+
+	/// The service-policy headline as a deterministic sentence.
+	measure 'Service Insight' =
+			VAR vPositions = SUM(service_headline[positions])
+			VAR vLevel = SUM(service_headline[current_service_level])
+			VAR vValue = SUM(service_headline[safety_stock_value])
+			VAR vPoint = SUM(service_headline[cost_of_one_more_point])
+			VAR vLadder = SUM(service_headline[ladder_units_change_pts])
+			VAR vLadderRev = SUM(service_headline[ladder_revenue_change_pts])
+			VAR vOptimal = SUM(service_headline[optimal_units_change_pts])
+			VAR vReleased = SUM(service_headline[working_capital_released])
+			VAR vReleasedPct = SUM(service_headline[working_capital_released_pct])
+			RETURN
+			    "All " & FORMAT(vPositions, "#,0") & " positions are planned at the same "
+			        & FORMAT(vLevel, "0%") & ", which costs " & FORMAT(vValue, "$#,0")
+			        & " in safety stock; the next point of service costs "
+			        & FORMAT(vPoint, "$#,0") & " on its own. Re-allocating that identical "
+			        & "budget by the textbook ABC ladder moves unit fill "
+			        & FORMAT(vLadder, "+0.00;-0.00;0.00") & " points and revenue fill "
+			        & FORMAT(vLadderRev, "+0.00;-0.00;0.00")
+			        & " - it is a revenue heuristic being marked on units. Allocating by "
+			        & "marginal return instead moves unit fill "
+			        & FORMAT(vOptimal, "+0.00;-0.00;0.00")
+			        & " points for the same money, or holds today's fill rate and releases "
+			        & FORMAT(vReleased, "$#,0") & " (" & FORMAT(vReleasedPct, "0.0%")
+			        & ") of working capital instead."
+		lineageTag: 1c5c8aac-78b9-5d18-bdf9-ff3bf0f51864
+		displayFolder: Service Economics
+
 	column Value
 		dataType: int64
 		isHidden
@@ -606,3 +800,159 @@ table _Measures
 				in
 				    Source
 
+	/// What was invoiced across every purchase order line in the window.
+	measure 'Inbound Spend' = SUM(supplier_scorecard[spend])
+		formatString: \$#,0
+		lineageTag: 1c5bbf5b-0a12-5bef-ae31-7bbfb6835c29
+
+	/// What the same receipts would have cost at the negotiated price.
+	measure 'Contract Spend' = SUM(supplier_scorecard[contract_spend])
+		formatString: \$#,0
+		lineageTag: 95e42a50-8bff-5ace-8696-d6e874585b95
+
+	/// Invoiced minus contracted. Positive is money leaking out of the deal that was signed.
+	measure 'Purchase Price Variance' = [Inbound Spend] - [Contract Spend]
+		formatString: \$#,0
+		lineageTag: 32c4e2c1-8324-57d8-b418-0fc894ba048e
+
+	/// The same leak as a rate, so a small supplier's discipline is comparable to a large one's.
+	measure 'PPV %' = DIVIDE([Purchase Price Variance], [Contract Spend])
+		formatString: 0.0%
+		lineageTag: 2a6c8108-1122-5687-9098-4724c59c7309
+
+	measure 'Units Received' = SUM(supplier_scorecard[units_received])
+		formatString: #,0
+		lineageTag: cdd894d2-c487-5639-a5ec-8e03c17456b0
+
+	measure 'Units Rejected' = SUM(supplier_scorecard[units_rejected])
+		formatString: #,0
+		lineageTag: ca35d86a-9cf7-55d6-8ea3-852f02c82324
+
+	/// On units, not on lines: a 2% rejection on a 5,000-unit receipt matters more than a 40% one on a 200-unit receipt.
+	measure 'Reject Rate' = DIVIDE([Units Rejected], [Units Received])
+		formatString: 0.00%
+		lineageTag: 0ea0bcb2-a39d-59ab-b426-ff51681135d3
+
+	/// Money spent on stock that was condemned at the gate. A cash number, not a ratio.
+	measure 'Cost of Poor Quality' = SUM(supplier_scorecard[cost_of_poor_quality])
+		formatString: \$#,0
+		lineageTag: 0e31204f-a1cf-558e-93ab-d221bbd1efc5
+
+	/// Line-weighted, so the panel total is the rate across all purchase orders rather than the average of fifteen supplier rates - which would let a supplier with 34 lines swing the number as hard as one with 341.
+	measure 'Inbound OTIF %' =
+			DIVIDE(
+			SUMX(supplier_scorecard, supplier_scorecard[po_lines] * supplier_scorecard[otif_rate]),
+			SUM(supplier_scorecard[po_lines])
+			)
+		formatString: 0.0%
+		lineageTag: ba40f84a-fa5d-5125-8ce1-a67d261103fd
+
+	measure 'Inbound On Time %' =
+			DIVIDE(
+			SUMX(supplier_scorecard, supplier_scorecard[po_lines] * supplier_scorecard[on_time_rate]),
+			SUM(supplier_scorecard[po_lines])
+			)
+		formatString: 0.0%
+		lineageTag: 35a19250-2003-5b3a-af15-c8c3fd6d7a0c
+
+	/// Measured on the ACCEPTED quantity: a receipt that arrived complete and was then condemned did not fill the order.
+	measure 'Inbound In Full %' =
+			DIVIDE(
+			SUMX(supplier_scorecard, supplier_scorecard[po_lines] * supplier_scorecard[in_full_rate]),
+			SUM(supplier_scorecard[po_lines])
+			)
+		formatString: 0.0%
+		lineageTag: 4b672756-5e64-53c7-811d-038c84b56656
+
+	/// Delivery 35, quality 30, cost 20, responsiveness 15 - scored against published targets, never against the rest of the panel.
+	measure 'Composite Score' = AVERAGE(supplier_scorecard[composite_score])
+		formatString: 0.0
+		lineageTag: 18ea9231-33ea-5ac7-a869-156f1c1b634d
+
+	measure 'Suppliers Scored' = COUNTROWS(supplier_scorecard)
+		formatString: #,0
+		lineageTag: 16351fe8-8369-5e40-9ae3-4b6a22918c55
+
+	/// Suppliers whose measured band is not the band their contract calls them. The contractual tier is never an input to the score, so this comparison is not circular.
+	measure 'Tier Mismatches' = CALCULATE([Suppliers Scored], supplier_scorecard[tier_matches_measurement] = 0)
+		formatString: #,0
+		lineageTag: b7001169-a807-51d4-9d60-22a0786c71f5
+
+	measure 'Spend Under Mismatched Tier' = CALCULATE([Inbound Spend], supplier_scorecard[tier_matches_measurement] = 0)
+		formatString: \$#,0
+		lineageTag: a8999711-e917-5273-8207-e0ea8c0ca862
+
+	/// Colour by measurement, not by rank position: the best supplier on the page is green and anything under 45 is red wherever it sorts.
+	measure 'Score Highlight' =
+			VAR vTop = CALCULATE(MAX(supplier_scorecard[composite_score]), ALLSELECTED(supplier_scorecard))
+			VAR vHere = [Composite Score]
+			RETURN IF(vHere = vTop, "#5FD3A6", IF(vHere < 45, "#E0575B", "#7C9CC4"))
+		lineageTag: 24fba888-95e4-57dc-938d-e3fa9b6a3f8e
+
+	/// Annual spend sitting with a primary that a qualified alternate out-scores.
+	measure 'Spend At Risk' = SUM(award_shift_candidates[spend_at_risk])
+		formatString: \$#,0
+		lineageTag: f096887b-61d2-5c13-929b-80768d94eecd
+
+	measure 'Award Shift SKUs' = COUNTROWS(award_shift_candidates)
+		formatString: #,0
+		lineageTag: 60d200a4-6f72-5e60-872b-c227e867fca0
+
+	/// What moving that spend does to the purchase price. Positive costs money. Alternates that have never shipped the SKU carry no price and are excluded rather than guessed at.
+	measure 'Price Impact of Shifting' = CALCULATE(SUM(award_shift_candidates[price_impact]), award_shift_candidates[price_known] = 1)
+		formatString: \$#,0
+		lineageTag: ff5d5e0b-4f32-52b7-aa8e-a5f24826f218
+
+	/// Qualified second sources that have never actually been ordered from for the SKU they are approved on.
+	measure 'Unpriced Alternates' = CALCULATE([Award Shift SKUs], award_shift_candidates[price_known] = 0)
+		formatString: #,0
+		lineageTag: 0a1cae8e-ecee-5c61-b553-c4460579d028
+
+	measure 'Rejected Value' = SUM(reject_reasons[value])
+		formatString: \$#,0
+		lineageTag: c59d3aa4-930e-59bc-804c-9ac9a98179d2
+
+	measure 'Reject Share' = SUM(reject_reasons[share_of_value])
+		formatString: 0.0%
+		lineageTag: 026ff7e1-e7b6-5d8d-83fd-e4dbb255fe19
+
+	/// The safety-stock investment a given cycle service level requires across all 478 positions.
+	measure 'Safety Stock Value' = SUM(service_exchange_curve[safety_stock_value])
+		formatString: \$#,0
+		lineageTag: 8c6664ab-47ea-5deb-b57d-88b47c50c703
+
+	measure 'Fill Rate' = SUM(service_exchange_curve[fill_units])
+		formatString: 0.00%
+		lineageTag: 06f1f02b-b629-53fd-ae07-8b3a9d3e3d58
+
+	/// What each service level costs against the flat 95% policy in force.
+	measure 'Cost vs Today' = SUM(service_exchange_curve[vs_current_value])
+		formatString: \$#,0
+		lineageTag: 02b1b1e0-4015-5971-a140-26ad7ac296db
+
+	/// Every allocation on this page costs the same money. Only where it sits changes.
+	measure 'Policy Safety Stock' = SUM(service_policy_options[safety_stock_value])
+		formatString: \$#,0
+		lineageTag: 499d12a5-0391-53cb-80ad-b6c89493a958
+
+	measure 'Policy Fill Units' = SUM(service_policy_options[fill_units])
+		formatString: 0.00%
+		lineageTag: 9531cada-0c1b-5df8-bdfa-baac31346693
+
+	measure 'Policy Fill Revenue' = SUM(service_policy_options[fill_revenue])
+		formatString: 0.00%
+		lineageTag: 1e3d2021-f36b-5e69-91fb-85038c8d5122
+
+	measure 'Value Held Now' = SUM(service_policy_by_class[value_now])
+		formatString: \$#,0
+		lineageTag: 003503a4-9ef6-5b2c-a36e-ef29981516e3
+
+	/// How the textbook ABC ladder moves money between classes at constant spend.
+	measure 'Ladder Change' = SUM(service_policy_by_class[ladder_change])
+		formatString: \$#,0
+		lineageTag: 3e4f535f-220d-57dd-ba9a-a367b713f5ee
+
+	/// How a marginal-return allocation moves it - which on this network is the opposite direction.
+	measure 'Optimal Change' = SUM(service_policy_by_class[optimal_change])
+		formatString: \$#,0
+		lineageTag: 4919e25e-f6c1-50c4-bd4f-3690d2361a61

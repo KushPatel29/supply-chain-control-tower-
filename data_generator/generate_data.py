@@ -371,6 +371,151 @@ def gen_inventory_position(products, warehouses, orders, sourcing):
             })
     return pd.DataFrame(rows)
 
+
+# -------------------------------------------------------------------------
+# Purchase orders
+#
+#
+# The model has customer orders, lots and a stock position - the outbound side and
+# the shelf. It has no record of what was ORDERED from a supplier, when it was
+# promised, when it turned up, how much of it was rejected, or what it cost against
+# the contract. Without that there is no supplier performance to measure: the
+# current data gives every supplier the same 1.9-day inbound lead, the same shelf
+# life at receipt, and an identical unit cost, so any scorecard built on it would
+# be ranking noise and presenting it as procurement advice.
+#
+# So each approved supplier gets latent traits it is then measured on - and
+# deliberately NOT aligned with the contractual tier, because "our tiering does not
+# match measured performance" is the finding a vendor review exists to produce, and
+# a scorecard that merely re-reads the tier tells nobody anything.
+#
+# Additive, from its own RNG, so every existing fact stays byte-identical.
+# -------------------------------------------------------------------------
+
+PO_SEED = 20260909
+PO_WEEKS = 52
+RECEIPT_TOLERANCE = 0.98      # received at or above this share counts as in full
+
+# Reject reasons, and how often each is the cause when a receipt is rejected.
+REJECT_REASONS = [
+    ("Temperature excursion in transit", 0.30),
+    ("Short shelf life on arrival", 0.24),
+    ("Damaged packaging", 0.20),
+    ("Failed spec check", 0.15),
+    ("Documentation incomplete", 0.11),
+]
+
+
+def gen_purchase_orders(products, suppliers, sourcing, warehouses):
+    """One row per PO line: what was ordered, promised, received, and paid.
+
+    Quantities follow the approved award shares, so the scorecard weights each
+    supplier by the business it actually holds rather than by how many POs it
+    happens to appear on.
+    """
+    rng = np.random.default_rng(PO_SEED)
+    prod = products.set_index("product_id")
+    wh_ids = warehouses["warehouse_id"].tolist()
+
+    # --- latent supplier behaviour ----------------------------------------
+    # Drawn once per supplier and never written to any dimension: this is what
+    # the scorecard has to recover from the transactions, which is the whole
+    # point of measuring rather than asking.
+    traits = {}
+    for sid in suppliers["supplier_id"]:
+        traits[sid] = {
+            # P(on time) and how badly late when late
+            "on_time": float(np.clip(rng.normal(0.88, 0.09), 0.55, 0.99)),
+            "late_days": float(rng.uniform(2.0, 11.0)),
+            # P(complete) and how short when short
+            "in_full": float(np.clip(rng.normal(0.93, 0.06), 0.70, 0.999)),
+            "short_share": float(rng.uniform(0.04, 0.20)),
+            # quality: how often a receipt has anything wrong with it, and how
+            # much of that receipt is condemned when it does
+            "reject_freq": float(np.clip(rng.beta(2.0, 22.0), 0.005, 0.30)),
+            "reject_share": float(rng.uniform(0.03, 0.22)),
+            # cost discipline
+            "price_drift": float(rng.normal(0.012, 0.035)),
+            # how much its own lead time wanders week to week
+            "lead_noise": float(rng.uniform(0.5, 2.2)),
+        }
+
+    reasons = [r for r, _ in REJECT_REASONS]
+    reason_p = np.array([p for _, p in REJECT_REASONS])
+    reason_p = reason_p / reason_p.sum()
+
+    rows = []
+    po_id = 1
+    week_starts = pd.date_range(end=SNAPSHOT_END, periods=PO_WEEKS, freq="7D")
+    for _, s in sourcing.iterrows():
+        pid, sid = int(s.product_id), int(s.supplier_id)
+        t = traits[sid]
+        std_cost = float(prod.loc[pid, "unit_cost"])
+        # The contract price is the standard cost adjusted by the origin's
+        # price index - the number a buyer negotiated and is owed.
+        contract_price = round(std_cost * float(s.price_index), 2)
+        # Award share drives order frequency: a 5% award does not generate as
+        # many POs as a 60% one.
+        weeks = [w for w in week_starts if rng.random() < float(s.allocation_share)]
+        for week in weeks:
+            qty = int(max(s.moq_units, rng.normal(s.moq_units * 1.6,
+                                                  s.moq_units * 0.35)))
+            lead = float(s.contract_lead_days)
+            promised = week + pd.Timedelta(days=int(round(lead)))
+
+            # On time means on or before the promise, so an on-time draw can
+            # only land early - letting week-to-week wobble push an on-time
+            # delivery past its own promise date is how the first cut of this
+            # reported 53% on-time for suppliers drawn at 88%.
+            wobble = rng.normal(0, s.lead_time_sigma_days * t["lead_noise"])
+            if rng.random() < t["on_time"]:
+                days = -int(abs(round(wobble)))
+            else:
+                days = max(1, int(rng.exponential(t["late_days"]))
+                           + max(0, int(round(wobble))))
+            received = promised + pd.Timedelta(days=days)
+
+            in_full = rng.random() < t["in_full"]
+            qty_received = qty if in_full else int(qty * (1 - rng.uniform(
+                0.02, t["short_share"])))
+
+            # Rejection is an event, not a rate applied to every receipt. A
+            # small per-unit rate multiplied by a four-figure quantity condemns
+            # something on nearly every line, which reads as "every supplier
+            # rejects a little" - untrue, and no use to a buyer deciding who to
+            # put on notice. Most deliveries are accepted whole; the ones that
+            # are not lose a visible chunk of themselves.
+            if rng.random() < t["reject_freq"]:
+                qty_rejected = max(1, int(qty_received * rng.uniform(
+                    0.03, t["reject_share"])))
+                reason = str(rng.choice(reasons, p=reason_p))
+            else:
+                qty_rejected, reason = 0, ""
+
+            # What was actually invoiced. Price discipline is a supplier trait:
+            # some hold the contract, some drift above it every quarter.
+            paid = round(contract_price * (1 + t["price_drift"]
+                                           + rng.normal(0, 0.01)), 2)
+
+            rows.append({
+                "po_id": f"PO-{po_id:06d}",
+                "product_id": pid,
+                "supplier_id": sid,
+                "warehouse_id": int(rng.choice(wh_ids)),
+                "order_date": week.date().isoformat(),
+                "promised_date": promised.date().isoformat(),
+                "received_date": received.date().isoformat(),
+                "qty_ordered": qty,
+                "qty_received": qty_received,
+                "qty_rejected": qty_rejected,
+                "reject_reason": reason,
+                "contract_price": contract_price,
+                "unit_price": paid,
+                "is_primary": int(s.is_primary),
+            })
+            po_id += 1
+    return pd.DataFrame(rows)
+
 def main():
     print("Generating dimension tables...")
     products = gen_dim_product()
@@ -394,11 +539,15 @@ def main():
     print("Generating weekly inventory positions (planning view)...")
     positions = gen_inventory_position(products, warehouses, orders, sourcing)
 
+    print("Generating purchase orders (the inbound half of the chain)...")
+    purchase_orders = gen_purchase_orders(products, suppliers, sourcing, warehouses)
+
     tables = {
         "dim_product": products,
         "dim_supplier": suppliers,
         "fact_sourcing": sourcing,
         "fact_inventory_position": positions,
+        "fact_purchase_orders": purchase_orders,
         "dim_warehouse": warehouses,
         "dim_customer": customers,
         "dim_lot": lots,

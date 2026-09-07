@@ -1,0 +1,25 @@
+product_id,sku,category,incumbent,incumbent_score,alternate,alternate_score,score_gap,spend_at_risk,price_known,unit_price_delta,price_impact
+18,SKU-1018,Seafood,Williams and Sons,41.5,Gray-Mayo,59.2,17.7,5993721.52,1,-3.47,-614897.36
+12,SKU-1012,Deli,Blair PLC,56.1,Galloway-Wyatt,67.1,11.0,5485284.03,1,-1.03,-160338.6
+56,SKU-1056,Deli,"Watts, Robinson and Nguyen",55.0,Perez Inc,65.9,10.9,4927401.0,1,4.01,641841.81
+46,SKU-1046,Frozen,"Watts, Robinson and Nguyen",55.0,Galloway-Wyatt,67.1,12.1,2238674.03,1,3.34,405173.8
+19,SKU-1019,Fresh Meat,"Mcclure, Ward and Lee",53.4,Galloway-Wyatt,67.1,13.7,1863641.76,1,1.18,189279.38
+25,SKU-1025,Frozen,"Walter, Edwards and Rios",51.5,Galloway-Wyatt,67.1,15.6,1415601.95,1,-2.93,-122288.22
+23,SKU-1023,Seafood,"Flowers, Martin and Kelly",52.8,Galloway-Wyatt,67.1,14.3,1348631.2,1,2.44,209659.89
+54,SKU-1054,Frozen,"Walter, Edwards and Rios",51.5,Perez Inc,65.9,14.4,1142199.19,1,-1.68,-53110.21
+5,SKU-1005,Fresh Meat,Dudley Group,38.0,"Watts, Robinson and Nguyen",55.0,17.0,1012127.85,1,-2.71,-160461.73
+9,SKU-1009,Fresh Meat,Williams and Sons,41.5,"Flowers, Martin and Kelly",52.8,11.3,559337.3,0,,
+30,SKU-1030,Fresh Meat,Blair PLC,56.1,Arnold Ltd,67.7,11.6,549751.98,1,-2.4,-103149.96
+40,SKU-1040,Fresh Meat,"Flowers, Martin and Kelly",52.8,Galloway-Wyatt,67.1,14.3,425345.68,1,3.06,43910.92
+3,SKU-1003,Deli,"Walter, Edwards and Rios",51.5,Perez Inc,65.9,14.4,383036.2,0,,
+20,SKU-1020,Frozen,Dudley Group,38.0,Galloway-Wyatt,67.1,29.1,198960.83,1,-1.0,-10605.85
+35,SKU-1035,Frozen,"Watts, Robinson and Nguyen",55.0,Perez Inc,65.9,10.9,184486.55,1,4.02,39475.16
+45,SKU-1045,Frozen,"Mcclure, Ward and Lee",53.4,Arnold Ltd,67.7,14.3,151573.36,1,-1.86,-9151.7
+44,SKU-1044,Seafood,"Mcclure, Ward and Lee",53.4,Perez Inc,65.9,12.5,145502.01,1,2.38,27418.44
+17,SKU-1017,Seafood,"Mcclure, Ward and Lee",53.4,Perez Inc,65.9,12.5,140577.54,1,6.04,35423.22
+2,SKU-1002,Deli,Dudley Group,38.0,"Walter, Edwards and Rios",51.5,13.5,125770.0,1,0.51,14539.15
+6,SKU-1006,Deli,"Watts, Robinson and Nguyen",55.0,Perez Inc,65.9,10.9,110697.69,1,5.74,33311.37
+50,SKU-1050,Seafood,"Walter, Edwards and Rios",51.5,Arnold Ltd,67.7,16.2,86987.41,1,-3.02,-12018.48
+24,SKU-1024,Fresh Meat,Dudley Group,38.0,Gray-Mayo,59.2,21.2,64506.79,1,-0.64,-2580.64
+55,SKU-1055,Deli,"Flowers, Martin and Kelly",52.8,Galloway-Wyatt,67.1,14.3,53373.51,1,0.18,4096.89
+37,SKU-1037,Deli,Williams and Sons,41.5,Arnold Ltd,67.7,26.2,25973.8,1,-0.4,-1954.07

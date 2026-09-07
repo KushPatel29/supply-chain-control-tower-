@@ -1,0 +1,6 @@
+reject_reason,lines,units,value,share_of_value,cumulative_share
+Temperature excursion in transit,92,10240,192167.95,0.3386,0.3386
+Short shelf life on arrival,61,6277,123071.0,0.2169,0.5555
+Damaged packaging,57,5339,115685.05,0.2039,0.7594
+Documentation incomplete,26,3688,76723.47,0.1352,0.8946
+Failed spec check,42,2830,59849.45,0.1055,1.0001

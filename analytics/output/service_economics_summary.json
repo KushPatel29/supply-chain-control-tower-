@@ -1,0 +1,33 @@
+{
+  "positions": 478,
+  "skus": 60,
+  "as_of": "2025-06-30",
+  "current_service_level": 0.95,
+  "current_z": 1.645,
+  "safety_stock_value": 7260290.71,
+  "fill_units_now": 0.9864,
+  "fill_revenue_now": 0.98641,
+  "cost_of_one_more_point": 467224.03,
+  "cost_of_99_vs_95": 3007163.3,
+  "ladder_service_levels": {
+    "A": 0.98,
+    "B": 0.95,
+    "C": 0.9
+  },
+  "ladder_offset_z": -0.295,
+  "fill_units_ladder": 0.98071,
+  "fill_revenue_ladder": 0.98597,
+  "ladder_units_change_pts": -0.569,
+  "ladder_revenue_change_pts": -0.044,
+  "fill_units_optimal": 0.99314,
+  "optimal_units_change_pts": 0.674,
+  "fill_revenue_optimal": 0.99237,
+  "optimal_revenue_change_pts": 0.596,
+  "budget_holding_service": 6021225.91,
+  "working_capital_released": 1239064.8,
+  "working_capital_released_pct": 0.1707,
+  "a_class_ladder_change": 389684.89,
+  "c_class_ladder_change": -178579.17,
+  "a_class_optimal_change": -221907.31,
+  "c_class_optimal_change": 107996.9
+}

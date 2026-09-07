@@ -114,6 +114,18 @@
         "date_key",
         "product_key"
       ]
+    },
+    "fact_purchase_orders": {
+      "merge_keys": [
+        "po_id"
+      ],
+      "partition_cols": [
+        "order_date"
+      ],
+      "z_order_cols": [
+        "supplier_key",
+        "product_key"
+      ]
     }
   }
 }

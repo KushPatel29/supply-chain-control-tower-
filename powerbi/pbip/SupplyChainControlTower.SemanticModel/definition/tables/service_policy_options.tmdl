@@ -1,0 +1,47 @@
+/// Four ways to spend the identical safety-stock budget, each scored on both objectives. The textbook ABC ladder loses unit fill here - it is a revenue heuristic being marked on units.
+table service_policy_options
+	lineageTag: f64570bb-1c7d-5ed2-a7c3-703f859f51d5
+
+	column policy
+		dataType: string
+		lineageTag: c4f19b7a-ea18-58d3-9ca9-57ca8ab8d3cb
+		summarizeBy: none
+		sourceColumn: policy
+
+	column safety_stock_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 1b03b499-578e-5072-ad4a-cfced335d726
+		summarizeBy: none
+		sourceColumn: safety_stock_value
+
+	column fill_units
+		dataType: double
+		formatString: 0.00%
+		lineageTag: 7bb0bf0a-348e-5661-97a8-38a7d79f9db0
+		summarizeBy: none
+		sourceColumn: fill_units
+
+	column fill_revenue
+		dataType: double
+		formatString: 0.00%
+		lineageTag: caade4dd-9b58-56a7-a6b5-c3e72da462dc
+		summarizeBy: none
+		sourceColumn: fill_revenue
+
+	column mean_service_level
+		dataType: double
+		formatString: 0.0%
+		lineageTag: 5d3fc232-4cf6-5018-8d93-4b0c6dd79a4e
+		summarizeBy: none
+		sourceColumn: mean_service_level
+
+	partition service_policy_options = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\service_policy_options.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"policy", type text}, {"safety_stock_value", type number}, {"fill_units", type number}, {"fill_revenue", type number}, {"mean_service_level", type number}})
+				in
+				    Typed

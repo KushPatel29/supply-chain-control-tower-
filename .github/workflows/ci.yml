@@ -66,6 +66,12 @@ jobs:
       - name: Inventory position, cover vs lead, and the transfer opportunity
         run: python analytics/inventory_health.py
 
+      - name: Supplier scorecard, tier-vs-measurement, award shift
+        run: python analytics/supplier_scorecard.py
+
+      - name: Service-level economics (exchange curve + constant-spend re-allocation)
+        run: python analytics/service_economics.py
+
       - name: The published analytics figures must be reproducible byte for byte
         run: git diff --exit-code -- analytics/output/
 

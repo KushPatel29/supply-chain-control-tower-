@@ -1,0 +1,225 @@
+/// One row: the procurement headline figures the cards read. A single row cannot be double-counted by a roll-up that meets a total it did not expect.
+table supplier_headline
+	lineageTag: 6647c725-a4f6-50aa-99da-47c86070cbc1
+
+	column po_lines
+		dataType: int64
+		formatString: #,0
+		lineageTag: fb5859a6-6eca-5472-92e7-536fc87c74ee
+		summarizeBy: none
+		sourceColumn: po_lines
+
+	column suppliers
+		dataType: int64
+		formatString: #,0
+		lineageTag: df074c5d-e20c-55bf-9762-f9fccff369c9
+		summarizeBy: none
+		sourceColumn: suppliers
+
+	column skus_purchased
+		dataType: int64
+		formatString: #,0
+		lineageTag: 4aabce97-d9ac-56ce-ba2b-9310809d37d7
+		summarizeBy: none
+		sourceColumn: skus_purchased
+
+	column window_start
+		dataType: string
+		lineageTag: 0253cd66-b2bd-5c1f-b5eb-3b832bd37a2b
+		summarizeBy: none
+		sourceColumn: window_start
+
+	column window_end
+		dataType: string
+		lineageTag: a1dec3c1-6ac7-5a02-92a3-841c92a30028
+		summarizeBy: none
+		sourceColumn: window_end
+
+	column total_spend
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 42106410-aa3c-58d0-ab74-ca5906e6462a
+		summarizeBy: none
+		sourceColumn: total_spend
+
+	column otif_rate
+		dataType: double
+		formatString: #,0.00
+		lineageTag: bbf56847-c133-51bd-8b42-76e5ada1428c
+		summarizeBy: none
+		sourceColumn: otif_rate
+
+	column on_time_rate
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 5e2bc626-5659-531c-893d-305f191b7c69
+		summarizeBy: none
+		sourceColumn: on_time_rate
+
+	column in_full_rate
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 0c6712b7-8388-5051-8120-79167c269626
+		summarizeBy: none
+		sourceColumn: in_full_rate
+
+	column reject_rate
+		dataType: double
+		formatString: #,0.00
+		lineageTag: b2f1de27-4884-5e89-b062-065943e7d922
+		summarizeBy: none
+		sourceColumn: reject_rate
+
+	column cost_of_poor_quality
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 4dc19fb7-2d78-5a5a-9b9f-ed87a6273ebf
+		summarizeBy: none
+		sourceColumn: cost_of_poor_quality
+
+	column ppv_dollars
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 7a93fa03-64ce-5bba-9755-c93d81827e90
+		summarizeBy: none
+		sourceColumn: ppv_dollars
+
+	column ppv_pct
+		dataType: double
+		formatString: #,0.00
+		lineageTag: b3e84a95-1a69-5b56-92ae-e39fe97ca393
+		summarizeBy: none
+		sourceColumn: ppv_pct
+
+	column overbilled_suppliers
+		dataType: int64
+		formatString: #,0
+		lineageTag: ae8ff180-4998-5978-8ab9-b40859dda472
+		summarizeBy: none
+		sourceColumn: overbilled_suppliers
+
+	column overbilled_dollars
+		dataType: double
+		formatString: #,0.00
+		lineageTag: d1888493-3563-5856-9bf9-dcb499470fe2
+		summarizeBy: none
+		sourceColumn: overbilled_dollars
+
+	column best_supplier
+		dataType: string
+		lineageTag: 35967bb7-c7e4-598b-97ee-cd45dab95b03
+		summarizeBy: none
+		sourceColumn: best_supplier
+
+	column best_score
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 255a73a7-08ed-5932-a3f0-fc2694f73e28
+		summarizeBy: none
+		sourceColumn: best_score
+
+	column worst_supplier
+		dataType: string
+		lineageTag: c81d8147-f6a3-5606-b04a-478beecc0a5f
+		summarizeBy: none
+		sourceColumn: worst_supplier
+
+	column worst_score
+		dataType: double
+		formatString: #,0.00
+		lineageTag: df1f919e-9ca7-5f51-a369-d585ec2884f7
+		summarizeBy: none
+		sourceColumn: worst_score
+
+	column worst_otif
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 931f1b78-7959-5bcc-a3bf-c7761b16a385
+		summarizeBy: none
+		sourceColumn: worst_otif
+
+	column tier_mismatches
+		dataType: int64
+		formatString: #,0
+		lineageTag: ca28ddbe-a36a-5c4c-9298-d02373df22ad
+		summarizeBy: none
+		sourceColumn: tier_mismatches
+
+	column tier_inversions
+		dataType: int64
+		formatString: #,0
+		lineageTag: 27e79367-8a39-5ac9-a997-89a5397fde4c
+		summarizeBy: none
+		sourceColumn: tier_inversions
+
+	column spend_under_mismatched_tier
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 52dcacd3-4999-5aed-af2d-0b8dd8ec43f1
+		summarizeBy: none
+		sourceColumn: spend_under_mismatched_tier
+
+	column award_shift_skus
+		dataType: int64
+		formatString: #,0
+		lineageTag: 19ee80e7-69e8-57ef-b83c-04627a168c3b
+		summarizeBy: none
+		sourceColumn: award_shift_skus
+
+	column award_shift_spend
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 6b2a59e4-c637-578f-9009-40cad0ef91df
+		summarizeBy: none
+		sourceColumn: award_shift_spend
+
+	column award_shift_price_impact
+		dataType: double
+		formatString: #,0.00
+		lineageTag: fb05d0ae-6bd3-5f43-ba91-0f8ec1be108f
+		summarizeBy: none
+		sourceColumn: award_shift_price_impact
+
+	column award_shift_cheaper_skus
+		dataType: int64
+		formatString: #,0
+		lineageTag: 8a911a42-5323-59c9-aeb9-d8e9016b716c
+		summarizeBy: none
+		sourceColumn: award_shift_cheaper_skus
+
+	column award_shift_unpriced_skus
+		dataType: int64
+		formatString: #,0
+		lineageTag: b8e6704e-ae91-51c0-9685-321dfec25c0a
+		summarizeBy: none
+		sourceColumn: award_shift_unpriced_skus
+
+	column award_shift_unpriced_spend
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 8f6f8f36-c14e-599e-89f3-5924f68ee7d2
+		summarizeBy: none
+		sourceColumn: award_shift_unpriced_spend
+
+	column top_reject_reason
+		dataType: string
+		lineageTag: 33db8d26-c357-5990-a97a-5454626366e3
+		summarizeBy: none
+		sourceColumn: top_reject_reason
+
+	column top_reject_share
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 85c7fdd6-1116-587d-adc2-a2116f68c880
+		summarizeBy: none
+		sourceColumn: top_reject_share
+
+	partition supplier_headline = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\supplier_scorecard_headline.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"po_lines", Int64.Type}, {"suppliers", Int64.Type}, {"skus_purchased", Int64.Type}, {"window_start", type text}, {"window_end", type text}, {"total_spend", type number}, {"otif_rate", type number}, {"on_time_rate", type number}, {"in_full_rate", type number}, {"reject_rate", type number}, {"cost_of_poor_quality", type number}, {"ppv_dollars", type number}, {"ppv_pct", type number}, {"overbilled_suppliers", Int64.Type}, {"overbilled_dollars", type number}, {"best_supplier", type text}, {"best_score", type number}, {"worst_supplier", type text}, {"worst_score", type number}, {"worst_otif", type number}, {"tier_mismatches", Int64.Type}, {"tier_inversions", Int64.Type}, {"spend_under_mismatched_tier", type number}, {"award_shift_skus", Int64.Type}, {"award_shift_spend", type number}, {"award_shift_price_impact", type number}, {"award_shift_cheaper_skus", Int64.Type}, {"award_shift_unpriced_skus", Int64.Type}, {"award_shift_unpriced_spend", type number}, {"top_reject_reason", type text}, {"top_reject_share", type number}})
+				in
+				    Typed

@@ -91,6 +91,22 @@
       "lead_days": "integer",
       "safety_stock_target": "integer",
       "reorder_point": "integer"
+    },
+    "fact_purchase_orders": {
+      "po_id": "string",
+      "product_id": "integer",
+      "supplier_id": "integer",
+      "warehouse_id": "integer",
+      "order_date": "string",
+      "promised_date": "string",
+      "received_date": "string",
+      "qty_ordered": "integer",
+      "qty_received": "integer",
+      "qty_rejected": "integer",
+      "reject_reason": "string",
+      "contract_price": "number",
+      "unit_price": "number",
+      "is_primary": "integer"
     }
   }
 }

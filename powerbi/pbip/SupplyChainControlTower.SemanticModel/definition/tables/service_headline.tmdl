@@ -1,0 +1,194 @@
+/// One row: the service-policy headline figures the cards read.
+table service_headline
+	lineageTag: 78a2f180-fa8b-5d3a-bb21-127de9d1289c
+
+	column positions
+		dataType: int64
+		formatString: #,0
+		lineageTag: 0c0e4f71-c594-50ef-8460-489273ce96c6
+		summarizeBy: none
+		sourceColumn: positions
+
+	column skus
+		dataType: int64
+		formatString: #,0
+		lineageTag: 0af773e7-318b-5704-a623-d85b9d63d962
+		summarizeBy: none
+		sourceColumn: skus
+
+	column as_of
+		dataType: string
+		lineageTag: 427d9079-730e-5370-a6a1-bcfc928fc8b7
+		summarizeBy: none
+		sourceColumn: as_of
+
+	column current_service_level
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 22c37e32-ed84-51bd-b482-a7d063b090e6
+		summarizeBy: none
+		sourceColumn: current_service_level
+
+	column current_z
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 69ff7062-14bf-508a-ba89-bc54c4bc22eb
+		summarizeBy: none
+		sourceColumn: current_z
+
+	column safety_stock_value
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 2fb5ca76-8071-5d5a-a4ac-f957e737f5b2
+		summarizeBy: none
+		sourceColumn: safety_stock_value
+
+	column fill_units_now
+		dataType: double
+		formatString: #,0.00
+		lineageTag: fd329bef-8c6b-5ed6-ace1-1505b93bf38d
+		summarizeBy: none
+		sourceColumn: fill_units_now
+
+	column fill_revenue_now
+		dataType: double
+		formatString: #,0.00
+		lineageTag: b7417df4-a41a-51c1-a829-1e84008cacdd
+		summarizeBy: none
+		sourceColumn: fill_revenue_now
+
+	column cost_of_one_more_point
+		dataType: double
+		formatString: #,0.00
+		lineageTag: d4334832-72f0-59a8-bff7-a75c68e29ef4
+		summarizeBy: none
+		sourceColumn: cost_of_one_more_point
+
+	column cost_of_99_vs_95
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 8945538f-6a2c-56cd-a9f5-c1278e7e5f28
+		summarizeBy: none
+		sourceColumn: cost_of_99_vs_95
+
+	column ladder_offset_z
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 6657c4e6-3b8b-5c68-9326-cf2161e466c7
+		summarizeBy: none
+		sourceColumn: ladder_offset_z
+
+	column fill_units_ladder
+		dataType: double
+		formatString: #,0.00
+		lineageTag: b3bdc809-000b-51e7-ad17-3283177b4529
+		summarizeBy: none
+		sourceColumn: fill_units_ladder
+
+	column fill_revenue_ladder
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 58a8bf76-2a16-57b2-92cf-81d9b12cff97
+		summarizeBy: none
+		sourceColumn: fill_revenue_ladder
+
+	column ladder_units_change_pts
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 6f4481db-298a-5026-b444-2ce2e7ba767f
+		summarizeBy: none
+		sourceColumn: ladder_units_change_pts
+
+	column ladder_revenue_change_pts
+		dataType: double
+		formatString: #,0.00
+		lineageTag: e9b74916-fb35-5346-a131-fc455ec2a774
+		summarizeBy: none
+		sourceColumn: ladder_revenue_change_pts
+
+	column fill_units_optimal
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 6e53046c-60ca-546f-a27a-c46905b6807c
+		summarizeBy: none
+		sourceColumn: fill_units_optimal
+
+	column optimal_units_change_pts
+		dataType: double
+		formatString: #,0.00
+		lineageTag: d2b45379-30fe-5402-9082-f13ce4483454
+		summarizeBy: none
+		sourceColumn: optimal_units_change_pts
+
+	column fill_revenue_optimal
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 9b98f713-04d7-57dd-8983-427b3bfd3f1c
+		summarizeBy: none
+		sourceColumn: fill_revenue_optimal
+
+	column optimal_revenue_change_pts
+		dataType: double
+		formatString: #,0.00
+		lineageTag: df67bef8-d986-5377-8556-b4682fb6a532
+		summarizeBy: none
+		sourceColumn: optimal_revenue_change_pts
+
+	column budget_holding_service
+		dataType: double
+		formatString: #,0.00
+		lineageTag: c1f81402-b581-5813-a4f2-5ffc848de1a2
+		summarizeBy: none
+		sourceColumn: budget_holding_service
+
+	column working_capital_released
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 1dac1bd6-db19-5357-b628-eb3b9972bdc5
+		summarizeBy: none
+		sourceColumn: working_capital_released
+
+	column working_capital_released_pct
+		dataType: double
+		formatString: #,0.00
+		lineageTag: a3c16f80-1948-5dfe-b23d-980a383e7d27
+		summarizeBy: none
+		sourceColumn: working_capital_released_pct
+
+	column a_class_ladder_change
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 7b675948-c507-5f3f-95f8-462d5a7ac84b
+		summarizeBy: none
+		sourceColumn: a_class_ladder_change
+
+	column c_class_ladder_change
+		dataType: double
+		formatString: #,0.00
+		lineageTag: ca970623-7e41-57b9-8356-a8b876e177ce
+		summarizeBy: none
+		sourceColumn: c_class_ladder_change
+
+	column a_class_optimal_change
+		dataType: double
+		formatString: #,0.00
+		lineageTag: 01e4b07f-b918-58ce-900c-7724037c3cdc
+		summarizeBy: none
+		sourceColumn: a_class_optimal_change
+
+	column c_class_optimal_change
+		dataType: double
+		formatString: #,0.00
+		lineageTag: b4962d64-6d8f-5d6b-9246-a07f2451406c
+		summarizeBy: none
+		sourceColumn: c_class_optimal_change
+
+	partition service_headline = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\service_economics_headline.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"positions", Int64.Type}, {"skus", Int64.Type}, {"as_of", type text}, {"current_service_level", type number}, {"current_z", type number}, {"safety_stock_value", type number}, {"fill_units_now", type number}, {"fill_revenue_now", type number}, {"cost_of_one_more_point", type number}, {"cost_of_99_vs_95", type number}, {"ladder_offset_z", type number}, {"fill_units_ladder", type number}, {"fill_revenue_ladder", type number}, {"ladder_units_change_pts", type number}, {"ladder_revenue_change_pts", type number}, {"fill_units_optimal", type number}, {"optimal_units_change_pts", type number}, {"fill_revenue_optimal", type number}, {"optimal_revenue_change_pts", type number}, {"budget_holding_service", type number}, {"working_capital_released", type number}, {"working_capital_released_pct", type number}, {"a_class_ladder_change", type number}, {"c_class_ladder_change", type number}, {"a_class_optimal_change", type number}, {"c_class_optimal_change", type number}})
+				in
+				    Typed

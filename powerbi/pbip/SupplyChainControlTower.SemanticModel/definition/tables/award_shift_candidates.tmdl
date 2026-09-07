@@ -1,0 +1,95 @@
+/// SKUs whose incumbent primary is out-scored by an approved alternate by 8 points or more, with the annual spend and the price consequence of moving it. An alternate that has never shipped the SKU carries no price, and price_known says so rather than the page inventing one.
+table award_shift_candidates
+	lineageTag: 8b0c8f95-6510-571c-8d8b-7759b8cdeb2d
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 902ebe81-b30d-50a0-8465-1c6f9948b89f
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column sku
+		dataType: string
+		lineageTag: 614197e4-abd4-56c4-acce-7c264dbfbf00
+		summarizeBy: none
+		sourceColumn: sku
+
+	column category
+		dataType: string
+		lineageTag: c23aaecd-de1e-5921-9a52-4cd1a836f666
+		summarizeBy: none
+		sourceColumn: category
+
+	column incumbent
+		dataType: string
+		lineageTag: e9a5cc66-7324-57aa-b2bb-2b29262ece80
+		summarizeBy: none
+		sourceColumn: incumbent
+
+	column incumbent_score
+		dataType: double
+		formatString: 0.0
+		lineageTag: a2f014fc-9eea-5c8c-8871-8e3aa181ed43
+		summarizeBy: none
+		sourceColumn: incumbent_score
+
+	column alternate
+		dataType: string
+		lineageTag: a20b781a-f36a-56de-b3f6-82040c6957ea
+		summarizeBy: none
+		sourceColumn: alternate
+
+	column alternate_score
+		dataType: double
+		formatString: 0.0
+		lineageTag: 22a82736-4201-59fe-bb69-0fee5c1dd862
+		summarizeBy: none
+		sourceColumn: alternate_score
+
+	column score_gap
+		dataType: double
+		formatString: 0.0
+		lineageTag: db390877-9afb-52fa-823b-0ab8eee3dc67
+		summarizeBy: none
+		sourceColumn: score_gap
+
+	column spend_at_risk
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 594a365d-6053-5c74-ba73-24033cbd56eb
+		summarizeBy: none
+		sourceColumn: spend_at_risk
+
+	column price_known
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6db35d47-b8f6-5724-ab11-c8e469f493ad
+		summarizeBy: none
+		sourceColumn: price_known
+
+	column unit_price_delta
+		dataType: double
+		formatString: \$#,0.00
+		lineageTag: 22f4424f-0e7c-55b8-9801-5bbba2dbd441
+		summarizeBy: none
+		sourceColumn: unit_price_delta
+
+	column price_impact
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 7e169b91-eec2-52ed-bec9-2a40b7e9acc7
+		summarizeBy: none
+		sourceColumn: price_impact
+
+	partition award_shift_candidates = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\award_shift_candidates.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"product_id", Int64.Type}, {"sku", type text}, {"category", type text}, {"incumbent", type text}, {"incumbent_score", type number}, {"alternate", type text}, {"alternate_score", type number}, {"score_gap", type number}, {"spend_at_risk", type number}, {"price_known", Int64.Type}, {"unit_price_delta", type number}, {"price_impact", type number}})
+				in
+				    Typed

@@ -1,0 +1,62 @@
+{
+  "po_lines": 3106,
+  "suppliers": 15,
+  "skus_purchased": 60,
+  "window_start": "2024-07-08",
+  "window_end": "2025-06-30",
+  "total_spend": 82012264.99,
+  "otif_rate": 0.7357,
+  "on_time_rate": 0.9008,
+  "in_full_rate": 0.8194,
+  "reject_rate": 0.0066,
+  "cost_of_poor_quality": 567496.92,
+  "ppv_dollars": -835240.16,
+  "ppv_pct": -0.0101,
+  "overbilled_suppliers": 7,
+  "overbilled_dollars": 1445839.0,
+  "best_supplier": "Arnold Ltd",
+  "best_score": 67.7,
+  "worst_supplier": "Dudley Group",
+  "worst_score": 38.0,
+  "worst_otif": 0.6311,
+  "tier_mismatches": 9,
+  "tier_inversions": 3,
+  "inverted_suppliers": [
+    "Adams, Zuniga and Wong",
+    "Flowers, Martin and Kelly",
+    "Walter, Edwards and Rios"
+  ],
+  "spend_under_mismatched_tier": 51078133.48,
+  "award_shift_skus": 24,
+  "award_shift_spend": 28633163.18,
+  "award_shift_price_impact": 393573.21,
+  "award_shift_cheaper_skus": 11,
+  "award_shift_unpriced_skus": 2,
+  "award_shift_unpriced_spend": 942373.5,
+  "top_reject_reason": "Temperature excursion in transit",
+  "top_reject_share": 0.3386,
+  "weights": {
+    "delivery": 0.35,
+    "quality": 0.3,
+    "cost": 0.2,
+    "responsiveness": 0.15
+  },
+  "targets": {
+    "otif": [
+      0.95,
+      0.7
+    ],
+    "reject_rate": [
+      0.005,
+      0.05
+    ],
+    "ppv_pct": [
+      -0.02,
+      0.05
+    ],
+    "lead_sigma": [
+      2.0,
+      12.0
+    ]
+  }
+}
