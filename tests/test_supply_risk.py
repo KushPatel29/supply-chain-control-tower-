@@ -18,6 +18,12 @@ from analytics import supply_risk
 ROOT = Path(__file__).resolve().parent.parent
 BRONZE = ROOT / "data" / "bronze"
 
+# Read the COMMITTED summary before anything rebuilds it. The build() fixture
+# overwrites this file, so comparing afterwards could never fail - the test
+# would have passed on a stale committed figure forever.
+_COMMITTED_SUMMARY = json.loads(
+    (ROOT / "analytics" / "output" / "supply_risk_summary.json").read_text(encoding="utf-8"))
+
 
 @pytest.fixture(scope="module")
 def built():
@@ -122,9 +128,7 @@ def test_no_country_supplies_more_skus_than_exist(built, raw):
 def test_the_published_summary_matches_the_committed_json(built):
     """The report and the README quote this file; it must be what the code
     actually produced on this seed."""
-    on_disk = json.loads((ROOT / "analytics" / "output" / "supply_risk_summary.json")
-                         .read_text(encoding="utf-8"))
-    assert on_disk == built[0]
+    assert _COMMITTED_SUMMARY == built[0]
 
 
 def test_headline_figures_are_what_the_readme_claims(built):

@@ -56,5 +56,11 @@ jobs:
       - name: Model lifecycle (drift watch -> registry promotion policy)
         run: python analytics/model_lifecycle.py
 
+      - name: Sourcing risk + perfect-order decomposition
+        run: python analytics/supply_risk.py
+
+      - name: The published sourcing figures must be reproducible byte for byte
+        run: git diff --exit-code -- analytics/output/
+
       - name: Run pipeline logic & data-invariant tests
         run: pytest tests/ -v
