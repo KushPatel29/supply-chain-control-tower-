@@ -58,6 +58,16 @@ MEASURE_BARE_RE = re.compile(r"^\tmeasure ([A-Za-z_][\w ]*?) =", re.M)
 MEASURE_REF_RE = re.compile(r"(?<![\w'\]])\[([^\]\[]+)\]")
 
 
+def segments(windows_path):
+    """Split a Windows path or fragment on either separator, on any platform.
+
+    `"\\output\\x.csv"` is one filename containing backslashes to a POSIX
+    `Path`, not a directory and a file. Joining it whole is why this file
+    passed on the machine that wrote the model and failed on every runner.
+    """
+    return [p for p in re.split(r"[\\/]+", windows_path) if p]
+
+
 def path_parameters():
     """`expression <Name> = "<literal path>"` in expressions.tmdl.
 
@@ -70,7 +80,7 @@ def path_parameters():
     text = (SM / "expressions.tmdl").read_text(encoding="utf-8")
     out = {}
     for name, value in re.findall(r'^expression (\w+) = "([^"]+)"', text, re.M):
-        parts = [p for p in re.split(r"[\/]+", value.replace("\\\\", "\\")) if p]
+        parts = segments(value.replace("\\\\", "\\"))
         if ROOT.name in parts:
             tail = parts[parts.index(ROOT.name) + 1:]
             out[name] = ROOT.joinpath(*tail) if tail else ROOT
@@ -88,8 +98,8 @@ def csv_backed_tables():
     out = []
     for f in sorted(TABLES.glob("*.tmdl")):
         text = f.read_text(encoding="utf-8")
-        files = [PATHS[p] / n.lstrip("\\/") for p, n in SOURCE_RE.findall(text)
-                 if p in PATHS]
+        files = [PATHS[p].joinpath(*segments(n))
+                 for p, n in SOURCE_RE.findall(text) if p in PATHS]
         if files:
             out.append((f.name, text, files))
     return out
