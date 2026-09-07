@@ -15,7 +15,7 @@ table 'Time Intelligence'
 
 		calculationItem 'Previous Month' = CALCULATE(SELECTEDMEASURE(), DATEADD(dim_date[full_date], -1, MONTH))
 
-		calculationItem 'MoM %' = VAR Prev = CALCULATE(SELECTEDMEASURE(), DATEADD(dim_date[full_date], -1, MONTH)) RETURN DIVIDE(SELECTEDMEASURE() - Prev, Prev)
+		calculationItem 'MoM %' = VAR vPrev = CALCULATE(SELECTEDMEASURE(), DATEADD(dim_date[full_date], -1, MONTH)) RETURN DIVIDE(SELECTEDMEASURE() - vPrev, vPrev)
 
 			formatStringDefinition = "0.0%"
 

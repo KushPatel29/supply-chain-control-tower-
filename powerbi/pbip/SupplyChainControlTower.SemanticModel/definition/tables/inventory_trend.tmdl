@@ -1,0 +1,91 @@
+/// Thirteen weeks of the same policy test, split nearshore vs offshore. The total barely moves; what moves is which lanes hold the stock.
+table inventory_trend
+	lineageTag: 6ff0ce00-e180-531d-8f20-9de6ab7d078e
+
+	column week_start
+		dataType: dateTime
+		isHidden
+		formatString: yyyy-mm-dd
+		lineageTag: 2489ece6-815f-5047-b03c-5ecdaf011690
+		summarizeBy: none
+		sourceColumn: week_start
+
+	column week_label
+		dataType: string
+		lineageTag: e1f2ecc8-c087-54b5-9fde-259ed9cfcd89
+		summarizeBy: none
+		sourceColumn: week_label
+		sortByColumn: week_index
+
+	column week_index
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 758b15d4-8f5c-55ea-95a1-fc1f7704dbf9
+		summarizeBy: none
+		sourceColumn: week_index
+
+	column lane
+		dataType: string
+		lineageTag: 3d69b7c5-9fef-5e99-85a3-ea363211171d
+		summarizeBy: none
+		sourceColumn: lane
+
+	column positions
+		dataType: int64
+		formatString: #,0
+		lineageTag: efc054bd-1c41-5967-8a13-4bc59b271a98
+		summarizeBy: none
+		sourceColumn: positions
+
+	column gap_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 95ed11c0-282a-5cdf-ac32-428fa6ed6147
+		summarizeBy: none
+		sourceColumn: gap_value
+
+	column excess_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: b9650511-384a-5853-91ca-8e718f78ce88
+		summarizeBy: none
+		sourceColumn: excess_value
+
+	column on_hand_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 55548dc4-4600-5fc6-b9a0-5e5264e0d22f
+		summarizeBy: none
+		sourceColumn: on_hand_value
+
+	column below_reorder_point
+		dataType: int64
+		formatString: #,0
+		lineageTag: cd73b5d2-16a3-57e5-bb47-bd4c60a331af
+		summarizeBy: none
+		sourceColumn: below_reorder_point
+
+	column not_covering_lead
+		dataType: int64
+		formatString: #,0
+		lineageTag: a3ec4434-beb8-50e9-81fd-8c853ac77cb2
+		summarizeBy: none
+		sourceColumn: not_covering_lead
+
+	column below_reorder_share
+		dataType: double
+		formatString: 0.0%
+		lineageTag: ad008895-9946-5284-8f24-9bf1a9938472
+		summarizeBy: none
+		sourceColumn: below_reorder_share
+
+	partition inventory_trend = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\inventory_trend.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"week_start", type date}, {"lane", type text}, {"week_index", Int64.Type}, {"week_label", type text}, {"positions", Int64.Type}, {"gap_value", type number}, {"excess_value", type number}, {"on_hand_value", type number}, {"below_reorder_point", Int64.Type}, {"not_covering_lead", Int64.Type}, {"below_reorder_share", type number}})
+				in
+				    Typed

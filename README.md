@@ -7,7 +7,7 @@
 ![T-SQL](https://img.shields.io/badge/T--SQL-Star%20Schema-CC2927)
 ![MLflow](https://img.shields.io/badge/MLflow-backtest%20tracking-0194E2?logo=mlflow&logoColor=white)
 ![Delta Lake](https://img.shields.io/badge/Delta%20Lake-10M--row%20benchmarks-00ADD4)
-![Tests](https://img.shields.io/badge/tests-81%20passing-3B8C6E)
+![Tests](https://img.shields.io/badge/tests-174%20passing-3B8C6E)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 In specialty food distribution, every pallet is a countdown timer. A case of
@@ -76,21 +76,27 @@ happens when a lane closes:
 
 ![Global Sourcing Risk](powerbi/screenshots/02-global-sourcing-risk.png)
 
+**Inventory & Network Health** — the planner's view: position against reorder
+point, the shortfall split nearshore vs offshore across 13 weeks, and the part
+of it a stock transfer covers without a purchase order:
+
+![Inventory & Network Health](powerbi/screenshots/03-inventory-network-health.png)
+
 **Inventory & Expiry Risk** — FEFO banding, value at risk by warehouse, and
 lot-level traceability (the "which customers got batch X" question, answered
 in seconds):
 
-![Inventory & Expiry Risk](powerbi/screenshots/03-inventory-expiry-risk.png)
+![Inventory & Expiry Risk](powerbi/screenshots/04-inventory-expiry-risk.png)
 
 **Fulfillment (OTIF)** — the trend, the by-channel cut, and a customer
 scorecard for the quarterly review:
 
-![Fulfillment OTIF](powerbi/screenshots/04-fulfillment-otif.png)
+![Fulfillment OTIF](powerbi/screenshots/05-fulfillment-otif.png)
 
 **Executive Insights** — OTIF gauge against target, margin waterfall,
 a customer value map, the inventory treemap:
 
-![Executive Insights](powerbi/screenshots/05-executive-insights.png)
+![Executive Insights](powerbi/screenshots/06-executive-insights.png)
 
 And it's live — every slicer cross-filters every visual:
 
@@ -145,6 +151,66 @@ makes lateness the bigger driver the claim fails instead of ageing into a lie.
 freight, duty or FX data here, and a landed cost built on an invented freight
 rate is a decoration. Cash-to-cash — inventory days exist, DPO and DSO do not,
 and two thirds of a cycle is not a cycle.
+
+
+## Plenty of stock, and still short
+
+`fact_inventory_snapshot` models lots depleting. That is the right shape for
+FEFO, expiry and "which customers got batch X", and the wrong shape for
+planning — measured on it, every SKU looks permanently stocked out by the last
+snapshot. A planner works from a stock *position*: on hand, on order, and the
+target the policy says should be there. So the model gained one, weekly per
+SKU x warehouse for a quarter, driven by the demand actually in `fact_orders`
+so the analysis is not circular, and
+[`analytics/inventory_health.py`](analytics/inventory_health.py) reads it.
+
+The reorder point is cycle stock plus safety stock from King's formula, which
+carries **both** sources of variability — demand varying over the lead time,
+*and* the lead time itself varying against average demand. Dropping the second
+term is the standard way a safety stock ends up too small on a long offshore
+lane, which is exactly where it matters most. The test asserts the result
+matches the full formula **and does not match** the demand-only one, because a
+"greater than" assertion passes either way once you round to whole units.
+
+**What it found.**
+
+| | |
+|---|---|
+| Positions under policy | **267 of 478**, **$2,271,670** to close (**$1,684,061** on A-class) |
+| Cover vs its own lead | **127 positions** cannot outlast their own replenishment lead |
+| Idle working capital | **$545,732** sitting above 1.5x reorder point, on 47 positions |
+| Coverable by transfer | **33 SKUs**, **$438,318** — **19%** of the gap needs no purchase order |
+| Over 13 weeks | the gap grew **+17.4%** while stock on hand moved **−2.3%** |
+| ...offshore lanes | gap **+22.9%**, stock **−4.2%** |
+| ...nearshore lanes | gap **−42.2%**, stock **+23.2%** |
+
+That last pair is the finding, and a national total would have buried it. The
+network is not running out of stock; it is rotating stock out of the lanes that
+need the cover and into the ones that don't. Nearshore lanes re-order inside a
+single period and overshoot because they can; offshore lanes take longer to
+respond than the demand signal driving them, so they bleed. Days of cover on
+its own cannot see this either — 20 days is comfortable on a 6-day lane and a
+guaranteed stockout on a 40-day one — so every position is compared to **its
+own** lead time rather than to a network average.
+
+The lane a SKU belongs to is the bloc of its **slowest approved source**, not
+an average of its sources, because the slowest is the one the reorder point was
+built from. It reuses the sourcing bloc from the section above, so the two
+pages cannot disagree about what "offshore" means. A test asserts it on the
+dual-sourced, mixed-bloc SKUs specifically, and fails if that ever stops being
+true.
+
+**Buy it, or just move it.** A shortage in Calgary against a surplus of the
+same SKU in Halifax is not a buying problem, it is a moving problem — faster,
+cheaper, and invisible whenever shortage is only ever reported nationally. The
+two are separated rather than netted: shortfalls are summed, never cancelled
+against surpluses, because a surplus of SKU A does not fill a hole in SKU B.
+
+**What it deliberately does not compute.** XYZ demand classification — every
+SKU here lands in the same variability band (CV 0.58–0.77), so the axis would
+separate nothing. Carrying cost and stockout cost in dollars — no holding rate
+or lost-margin assumption exists in this data, and inventing one turns a
+measurement into an opinion.
 
 
 ## How the data flows
@@ -277,7 +343,7 @@ python pipeline/run_pipeline.py --simulate-schema-drift # contract kill: exit 3,
 python pipeline/run_pipeline.py --inject-dq-failure # watch it refuse: exit code 2, no publish
 python pipeline/run_pipeline.py --inject-bad-rows 40 # quarantine demo: isolated, still publishes
 python pipeline/run_pipeline.py --replay-quarantine  # release rows the source fix healed
-pytest tests/ -v                                     # 81 tests: contracts, gate, quarantine, stream, promotion
+pytest tests/ -v                                     # 174 tests: contracts, gate, quarantine, stream, promotion
 ```
 
 ## The forecast bake-off (in which the fancy model loses)
@@ -351,7 +417,7 @@ before/after are written up in
 
 ## Does it scale? I stopped claiming and measured
 
-The demo dataset is ~30k rows so the repo runs anywhere in seconds. The
+The demo dataset is ~37k rows so the repo runs anywhere in seconds. The
 design, though, is the 100M-row design — and [`benchmarks/`](benchmarks/BENCHMARKS.md)
 puts numbers behind that instead of adjectives. A 10-million-row fact table
 through Delta Lake, on a laptop:
@@ -381,7 +447,7 @@ exactly as they are.
 ## Run it yourself
 
 ```bash
-# 1. generate the data (~30k rows across 8 CSVs, incl. the approved vendor list)
+# 1. generate the data (~37k rows across 9 CSVs, incl. the approved vendor list)
 cd data_generator && pip install -r requirements.txt && python generate_data.py && cd ..
 
 # 2. run the whole medallion locally — no Fabric account needed
@@ -390,7 +456,10 @@ python pipeline/run_pipeline.py
 # 3. sourcing risk + the perfect-order decomposition the report reads
 python analytics/supply_risk.py
 
-# 4. open powerbi/pbip/SupplyChainControlTower.pbip in Power BI Desktop, hit Refresh
+# 4. inventory position vs policy, cover vs lead, and the transfer opportunity
+python analytics/inventory_health.py
+
+# 5. open powerbi/pbip/SupplyChainControlTower.pbip in Power BI Desktop, hit Refresh
 ```
 
 To run it on real Fabric: free trial at
@@ -434,7 +503,8 @@ the medallion, star schema, DQ gate, and security all carry over unchanged.
 
 ```
 data_generator/     synthetic data generator (Faker + numpy, fixed seed)
-data/bronze/        generated raw CSVs (~30k rows) + fact_sourcing.csv (approved vendor list)
+data/bronze/        generated raw CSVs (~37k rows) + fact_sourcing.csv (approved
+                     vendor list) + fact_inventory_position.csv (planner's stock position)
 contracts/          bronze_v1.json — versioned data contract (enforced pre-Bronze)
 config/             pipeline_metadata.json — table behavior as data (keys, Z-order)
 pipeline/           run_pipeline.py — orchestrator: contracts + quarantine + DQ gate
@@ -445,14 +515,17 @@ analytics/          demand_forecast.py — 4-model rolling-origin backtest + MLf
                      model_lifecycle.py — drift watch + registry champion promotion
                      supply_risk.py — sourcing concentration, disruption scenario,
                      perfect-order decomposition
+                     inventory_health.py — position vs policy, cover vs lead,
+                     transfer opportunity, 13-week lane drift
 benchmarks/         10M-row Delta Lake benchmarks (MERGE, Z-order file skipping)
 sql/                T-SQL DDL for the Gold star schema
 powerbi/            PBIP project (TMDL + PBIR): dynamic RLS + OLS roles,
                      Time Intelligence calculation group, DAX library, build guide
 deploy/             fabric-cicd deployment script + per-environment parameter.yml
 docs/               metric dictionary, pipeline spec, MODEL_OPTIMIZATION.md, DEPLOYMENT.md
-tests/              81 tests: contracts, gate, quarantine, streaming, observability,
-                     promotion policy, KPI rules, sourcing risk, report formatting
+tests/              174 tests: contracts, gate, quarantine, streaming, observability,
+                     promotion policy, KPI rules, sourcing risk, inventory health,
+                     semantic-model binding, report formatting
 .github/workflows/  ci.yml (pipeline + sabotage proofs) + deploy_fabric.yml (armed CI/CD)
 ```
 

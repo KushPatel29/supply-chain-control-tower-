@@ -66,10 +66,10 @@ table _Measures
 		lineageTag: e310e1a1-ff53-43ca-89be-1d92a96f8d41
 
 	measure 'Inventory Turns' =
-			VAR DaysInPeriod = DATEDIFF(MIN(dim_date[full_date]), MAX(dim_date[full_date]), DAY) + 1
-			VAR AnnualizationFactor = DIVIDE(365, DaysInPeriod)
+			VAR vDaysInPeriod = DATEDIFF(MIN(dim_date[full_date]), MAX(dim_date[full_date]), DAY) + 1
+			VAR vAnnualizationFactor = DIVIDE(365, vDaysInPeriod)
 			RETURN
-			    DIVIDE([Total COGS], [Avg Inventory Value]) * AnnualizationFactor
+			    DIVIDE([Total COGS], [Avg Inventory Value]) * vAnnualizationFactor
 		formatString: #,0.0
 		lineageTag: d7cf622b-34f2-4f65-b6ba-cf208ed34814
 
@@ -89,14 +89,14 @@ table _Measures
 
 	/// The model decides what 'bad' means, once, instead of every reader deciding for themselves in the meeting.
 	measure 'OTIF Status' =
-			VAR Actual = [OTIF %]
-			VAR Target = [OTIF Target]
+			VAR vActual = [OTIF %]
+			VAR vTarget = [OTIF Target]
 			RETURN
 			    SWITCH(
 			        TRUE(),
-			        ISBLANK(Actual), "No data",
-			        Actual >= Target, "On target",
-			        Actual >= Target - 0.01, "Watch",
+			        ISBLANK(vActual), "No data",
+			        vActual >= vTarget, "On target",
+			        vActual >= vTarget - 0.01, "Watch",
 			        "Off target"
 			    )
 		displayFolder: Verdict
@@ -116,12 +116,12 @@ table _Measures
 
 	/// Reference line under the callout, shown as the card's subtitle.
 	measure 'OTIF Reference' =
-			VAR Gap = [OTIF vs Target]
-			VAR Above = Gap >= 0
+			VAR vGap = [OTIF vs Target]
+			VAR vAbove = vGap >= 0
 			RETURN
 			    "Target " & FORMAT([OTIF Target], "0.0%") & "   "
-			        & IF(Above, "▲", "▼") & " "
-			        & FORMAT(ABS(Gap) * 100, "0.0") & " pts" & IF(Above, " over", " under")
+			        & IF(vAbove, "▲", "▼") & " "
+			        & FORMAT(ABS(vGap) * 100, "0.0") & " pts" & IF(vAbove, " over", " under")
 		displayFolder: Verdict
 		lineageTag: 59bb9e4d-ee97-5208-a1b8-e916f55a415a
 
@@ -145,13 +145,13 @@ table _Measures
 
 	/// Card subtitle for Total Revenue.
 	measure 'Revenue Reference' =
-			VAR Prior = [Revenue PM]
+			VAR vPrior = [Revenue PM]
 			RETURN
 			    IF(
-			        ISBLANK(Prior),
+			        ISBLANK(vPrior),
 			        "All periods in scope",
-			        "Prior month " & FORMAT(DIVIDE(Prior, 1000000), "\$#,0.0") & "M" & "   "
-			            & IF([Total Revenue] >= Prior, "▲", "▼") & " "
+			        "Prior month " & FORMAT(DIVIDE(vPrior, 1000000), "\$#,0.0") & "M" & "   "
+			            & IF([Total Revenue] >= vPrior, "▲", "▼") & " "
 			            & FORMAT(ABS([Revenue MoM %]), "0.0%")
 			    )
 		displayFolder: Verdict
@@ -175,14 +175,14 @@ table _Measures
 	/// iterating the table walks rows, which is not the axis unless the
 	/// dimension happens to have one row per value.
 	measure 'Category Margin Colour' =
-			VAR Here = [Gross Margin $]
-			VAR Extreme =
+			VAR vHere = [Gross Margin $]
+			VAR vExtreme =
 			    CALCULATE(
 			        MAXX(VALUES(dim_product[category]), [Gross Margin $]),
 			        ALLSELECTED()
 			    )
 			RETURN
-			    IF(Here = Extreme, "#3DD68C", "#454A82")
+			    IF(vHere = vExtreme, "#3DD68C", "#454A82")
 		displayFolder: Verdict
 		lineageTag: 692afb5f-d50b-5bf7-8bd1-bb44c5d704ed
 
@@ -209,15 +209,15 @@ table _Measures
 
 	/// Deterministic narrative. Smart Narrative would write this too, but a measure can be unit tested and cannot drift.
 	measure 'Control Tower Insight' =
-			VAR Otif = [OTIF %]
-			VAR Gap = Otif - [OTIF Target]
-			VAR WorstRegion =
+			VAR vOtif = [OTIF %]
+			VAR vGap = vOtif - [OTIF Target]
+			VAR vWorstRegion =
 			    MAXX(TOPN(1, VALUES(dim_warehouse[region]), [OTIF %], ASC), dim_warehouse[region])
-			VAR WorstOtif = CALCULATE([OTIF %], dim_warehouse[region] = WorstRegion)
+			VAR vWorstOtif = CALCULATE([OTIF %], dim_warehouse[region] = vWorstRegion)
 			RETURN
-			    "OTIF " & FORMAT(Otif, "0.0%") & " against a " & FORMAT([OTIF Target], "0.0%")
-			        & " target — " & IF(Gap >= 0, "on target", FORMAT(ABS(Gap) * 100, "0.0") & " pts short")
-			        & ". " & WorstRegion & " is the weakest lane at " & FORMAT(WorstOtif, "0.0%")
+			    "OTIF " & FORMAT(vOtif, "0.0%") & " against a " & FORMAT([OTIF Target], "0.0%")
+			        & " target — " & IF(vGap >= 0, "on target", FORMAT(ABS(vGap) * 100, "0.0") & " pts short")
+			        & ". " & vWorstRegion & " is the weakest lane at " & FORMAT(vWorstOtif, "0.0%")
 			        & ", and " & FORMAT([% Inventory at Risk], "0.0%") & " of inventory value sits in the expiry window."
 		displayFolder: Verdict
 		lineageTag: 0166a3cc-0c83-5c3b-9c28-73412f73c5f8
@@ -298,14 +298,14 @@ table _Measures
 
 	/// Reddens the origin carrying the most COGS.
 	measure 'Country Exposure Colour' =
-			VAR Here = [Exposed COGS]
-			VAR Extreme =
+			VAR vHere = [Exposed COGS]
+			VAR vExtreme =
 			    CALCULATE(
 			        MAXX(VALUES(country_exposure[Origin]), [Exposed COGS]),
 			        ALLSELECTED()
 			    )
 			RETURN
-			    IF(Here = Extreme, "#FF5C7A", "#454A82")
+			    IF(vHere = vExtreme, "#FF5C7A", "#454A82")
 		lineageTag: f3381362-7543-5be3-a079-2ac342049a73
 		displayFolder: Sourcing
 
@@ -327,19 +327,19 @@ table _Measures
 
 	/// The sourcing headline as a deterministic sentence, so the page states its own conclusion rather than leaving it to be inferred.
 	measure 'Sourcing Insight' =
-			VAR Worst =
+			VAR vWorst =
 			    TOPN(1, ALL(country_exposure), country_exposure[Exposed COGS], DESC)
-			VAR WorstCountry = MAXX(Worst, country_exposure[Origin])
-			VAR WorstShare = MAXX(Worst, country_exposure[Share of COGS])
-			VAR WorstStranded = MAXX(Worst, country_exposure[Stranded SKUs])
-			VAR WorstSwitch = MAXX(Worst, country_exposure[Switch lead (days)])
+			VAR vWorstCountry = MAXX(vWorst, country_exposure[Origin])
+			VAR vWorstShare = MAXX(vWorst, country_exposure[Share of COGS])
+			VAR vWorstStranded = MAXX(vWorst, country_exposure[Stranded SKUs])
+			VAR vWorstSwitch = MAXX(vWorst, country_exposure[Switch lead (days)])
 			RETURN
 			    FORMAT([Single-Source SKUs], "#,0") & " of " & FORMAT([Sourced SKUs], "#,0")
 			        & " SKUs have a single approved source. "
-			        & WorstCountry & " carries " & FORMAT(WorstShare, "0.0%")
-			        & " of COGS: if that lane closed, " & FORMAT(WorstStranded, "#,0")
+			        & vWorstCountry & " carries " & FORMAT(vWorstShare, "0.0%")
+			        & " of COGS: if that lane closed, " & FORMAT(vWorstStranded, "#,0")
 			        & " SKUs would have no qualified alternate and the rest would wait "
-			        & FORMAT(WorstSwitch, "#,0.0") & " days for the next source."
+			        & FORMAT(vWorstSwitch, "#,0.0") & " days for the next source."
 		lineageTag: 2b4f44ba-5db6-5882-9cc7-155977480966
 		displayFolder: Sourcing
 
@@ -369,16 +369,226 @@ table _Measures
 
 	/// Reddens whichever failure mode is actually the biggest.
 	measure 'Failure Colour' =
-			VAR Here = [Failure Orders]
-			VAR Extreme =
+			VAR vHere = [Failure Orders]
+			VAR vExtreme =
 			    CALCULATE(
 			        MAXX(VALUES(perfect_order_failures[Failure]), [Failure Orders]),
 			        ALLSELECTED()
 			    )
 			RETURN
-			    IF(Here = Extreme, "#FF5C7A", "#454A82")
+			    IF(vHere = vExtreme, "#FF5C7A", "#454A82")
 		lineageTag: 92be4fa6-7e81-5b14-9f12-551112b39b33
 		displayFolder: Service
+
+	/// Value of stock physically in the network this week.
+	measure 'Stock On Hand' = SUM(inventory_position[on_hand_value])
+		formatString: \$#,0
+		lineageTag: 3195537e-f305-5a45-a446-d7017bab8421
+		displayFolder: Inventory
+
+	/// Cost of closing every position back to its reorder point. Shortfalls are summed, never netted against surpluses elsewhere - a surplus of SKU A in Calgary does not fill a hole in SKU B in Halifax.
+	measure 'Replenishment Gap' = SUM(inventory_position[gap_value])
+		formatString: \$#,0
+		lineageTag: efe586e3-b2a4-5ef5-8a4e-dc9e00233d37
+		displayFolder: Inventory
+
+	/// SKU x warehouse combinations in scope.
+	measure 'Positions' = COUNTROWS(inventory_position)
+		formatString: #,0
+		lineageTag: 960987de-073b-535f-a414-3b5ac4e05659
+		displayFolder: Inventory
+
+	/// Positions whose on hand plus on order is under the reorder point.
+	measure 'Below Reorder Point' = CALCULATE([Positions], inventory_position[gap_units] > 0)
+		formatString: #,0
+		lineageTag: b1636bfb-8107-5e8d-bffd-86dc93dad1c1
+		displayFolder: Inventory
+
+	/// Share of positions under policy.
+	measure 'Below Reorder Share' = DIVIDE([Below Reorder Point], [Positions])
+		formatString: 0.0%
+		lineageTag: 09642085-ee58-5790-81c3-e3498bd96288
+		displayFolder: Inventory
+
+	/// Days of demand the stock on hand covers.
+	measure 'Cover Days' = AVERAGE(inventory_position[cover_days])
+		formatString: #,0.0
+		lineageTag: 536e0991-145b-511d-bb0e-8ca1f01fc57c
+		displayFolder: Inventory
+
+	/// Replenishment lead time of the governing source.
+	measure 'Lead Days' = AVERAGE(inventory_position[lead_days])
+		formatString: #,0.0
+		lineageTag: 0169c8fb-11c2-57b7-82f4-79b208be72cf
+		displayFolder: Inventory
+
+	/// Positions whose cover is shorter than their OWN lead time. 20 days of cover is comfortable on a 6-day lane and a stockout on a 40-day one, so the comparison has to be per position rather than to an average.
+	measure 'Stockout Window' = CALCULATE([Positions], inventory_position[covers_lead_time] = 0)
+		formatString: #,0
+		lineageTag: 4d30abeb-6b53-5ad9-868c-709624ff847e
+		displayFolder: Inventory
+
+	/// Working capital sitting above 1.5x the reorder point. Reported alongside the shortfall rather than netted against it - they are different SKUs in different places.
+	measure 'Excess Value' = SUM(inventory_position[excess_value])
+		formatString: \$#,0
+		lineageTag: 0513fc6f-ab98-5da6-b066-2a1862267273
+		displayFolder: Inventory
+
+	/// Part of the shortfall a stock transfer covers, needing no purchase order: short in one warehouse, long in another, same SKU.
+	measure 'Transfer Value' = SUM(transfer_opportunities[transferable_value])
+		formatString: \$#,0
+		lineageTag: 35a9f03c-a098-5690-8390-bb36028a8ca4
+		displayFolder: Inventory
+
+	/// SKUs that are short somewhere and long somewhere else.
+	measure 'Transfer SKUs' = COUNTROWS(transfer_opportunities)
+		formatString: #,0
+		lineageTag: 125460c1-3795-527e-a5dc-cadf9197721c
+		displayFolder: Inventory
+
+	/// How much of the whole gap is a move rather than a purchase.
+	measure 'Transfer Share' = DIVIDE([Transfer Value], CALCULATE([Replenishment Gap], ALL(inventory_position)))
+		formatString: 0.0%
+		lineageTag: 642cb466-7e98-5f52-bd65-7cfd95efacd0
+		displayFolder: Inventory
+
+	/// The replenishment gap week by week.
+	measure 'Gap Trend' = SUM(inventory_trend[gap_value])
+		formatString: \$#,0
+		lineageTag: 5dd13aed-d9fa-511f-a20b-67c755764747
+		displayFolder: Inventory
+
+	/// Stock on hand week by week.
+	measure 'Stock Trend' = SUM(inventory_trend[on_hand_value])
+		formatString: \$#,0
+		lineageTag: 634ca9ef-b4b8-5c16-a434-fd54ba783182
+		displayFolder: Inventory
+
+	/// Change in the replenishment gap across the weeks in view. First and last week are read from the selection, so a filtered page reports the drift over what is on screen rather than a hard-coded quarter.
+	measure 'Gap Drift' =
+			VAR vWeeks = ALLSELECTED(inventory_trend[week_index])
+			VAR vOpened =
+			    CALCULATE([Gap Trend], inventory_trend[week_index] = MINX(vWeeks, inventory_trend[week_index]))
+			VAR vClosed =
+			    CALCULATE([Gap Trend], inventory_trend[week_index] = MAXX(vWeeks, inventory_trend[week_index]))
+			RETURN
+			    DIVIDE(vClosed - vOpened, vOpened)
+		formatString: +0.0%;-0.0%;0.0%
+		lineageTag: f9997ca4-ef38-5a3e-b79e-68b7c9940dbc
+		displayFolder: Inventory
+
+	/// Change in stock on hand over the same weeks. The pair is the finding: a gap that grows while the total barely moves is a network rotating stock into the wrong lanes, not one running out of it.
+	measure 'Stock Drift' =
+			VAR vWeeks = ALLSELECTED(inventory_trend[week_index])
+			VAR vOpened =
+			    CALCULATE([Stock Trend], inventory_trend[week_index] = MINX(vWeeks, inventory_trend[week_index]))
+			VAR vClosed =
+			    CALCULATE([Stock Trend], inventory_trend[week_index] = MAXX(vWeeks, inventory_trend[week_index]))
+			RETURN
+			    DIVIDE(vClosed - vOpened, vOpened)
+		formatString: +0.0%;-0.0%;0.0%
+		lineageTag: 5dc49feb-7cb6-544f-bcea-fa22e19418cd
+		displayFolder: Inventory
+
+	/// Reddens the warehouse carrying the largest shortfall.
+	measure 'Gap Colour' =
+			VAR vHere = [Replenishment Gap]
+			VAR vExtreme =
+			    CALCULATE(
+			        MAXX(VALUES(inventory_position[warehouse_name]), [Replenishment Gap]),
+			        ALLSELECTED()
+			    )
+			RETURN
+			    IF(vHere = vExtreme, "#FF5C7A", "#454A82")
+		lineageTag: 99234783-737c-5363-818d-c20036b09321
+		displayFolder: Inventory
+
+	/// Greens the biggest transfer. Unlike the other highlights on this report the largest bar here is the good news, because it is the part of the shortfall that costs nothing to fix.
+	measure 'Transfer Colour' =
+			VAR vHere = [Transfer Value]
+			VAR vExtreme =
+			    CALCULATE(
+			        MAXX(VALUES(transfer_opportunities[sku]), [Transfer Value]),
+			        ALLSELECTED()
+			    )
+			RETURN
+			    IF(vHere = vExtreme, "#3DD68C", "#454A82")
+		lineageTag: 781e7929-2d61-5c1f-839c-f3f22fe21645
+		displayFolder: Inventory
+
+	/// Verdict on positions that cannot outlast their own lead time.
+	measure 'Stockout Status' =
+			VAR vShare = DIVIDE([Stockout Window], [Positions])
+			RETURN
+			    SWITCH(
+			        TRUE(),
+			        vShare <= 0.10, "On target",
+			        vShare <= 0.25, "Watch",
+			        "Off target"
+			    )
+		lineageTag: 57b7f19e-961b-5627-81e1-c0e18cb942e6
+		displayFolder: Inventory
+
+	/// Colour for the stockout-window verdict.
+	measure 'Stockout Colour' =
+			SWITCH(
+			    [Stockout Status],
+			    "On target", "#3DD68C",
+			    "Watch", "#F5A524",
+			    "#FF5C7A"
+			)
+		lineageTag: bca799a6-aed6-592e-be5f-414aa497a628
+		displayFolder: Inventory
+
+	/// Card subtitle: a shortfall in dollars needs its count.
+	measure 'Gap Reference' = FORMAT([Below Reorder Point], "#,0") & " of " & FORMAT([Positions], "#,0") & " positions under policy"
+		lineageTag: f9a930ff-d5e2-5429-91c1-07db1f4251d9
+		displayFolder: Inventory
+
+	/// Card subtitle pairing the gap drift with the stock drift.
+	measure 'Drift Reference' = "stock on hand " & FORMAT([Stock Drift], "+0.0%;-0.0%;0.0%") & " over the same weeks"
+		lineageTag: ba70f1a8-bbd6-561c-a7fc-6e17ccafc614
+		displayFolder: Inventory
+
+	/// Card subtitle for the stockout-window card.
+	measure 'Stockout Reference' = FORMAT(DIVIDE([Stockout Window], [Positions]), "0.0%") & " of positions   " & [Stockout Status]
+		lineageTag: 6ee56625-4094-5beb-89c9-5aa8055f583a
+		displayFolder: Inventory
+
+	/// Card subtitle for the transfer card.
+	measure 'Transfer Reference' = FORMAT([Transfer SKUs], "#,0") & " SKUs   " & FORMAT([Transfer Share], "0.0%") & " of the gap"
+		lineageTag: 66fba18b-e9f5-5665-b381-005db45cb750
+		displayFolder: Inventory
+
+	/// The inventory headline as a deterministic sentence, so the page states its own conclusion rather than leaving it to be inferred.
+	measure 'Inventory Insight' =
+			VAR vGap = CALCULATE([Replenishment Gap], ALL(inventory_position))
+			VAR vShort = CALCULATE([Below Reorder Point], ALL(inventory_position))
+			VAR vTotal = CALCULATE([Positions], ALL(inventory_position))
+			VAR vWindow = CALCULATE([Stockout Window], ALL(inventory_position))
+			VAR vMove = CALCULATE([Transfer Value], ALL(transfer_opportunities))
+			VAR vWeeks = CALCULATE(DISTINCTCOUNT(inventory_trend[week_index]), ALL(inventory_trend))
+			VAR vGapMove = CALCULATE([Gap Drift], ALL(inventory_trend))
+			VAR vStockMove = CALCULATE([Stock Drift], ALL(inventory_trend))
+			VAR vOffshore =
+			    CALCULATE([Gap Drift], ALL(inventory_trend), inventory_trend[lane] = "Offshore")
+			VAR vNearshore =
+			    CALCULATE([Gap Drift], ALL(inventory_trend), inventory_trend[lane] = "Nearshore")
+			RETURN
+			    FORMAT(vShort, "#,0") & " of " & FORMAT(vTotal, "#,0")
+			        & " positions are under their reorder point, " & FORMAT(vGap, "$#,0")
+			        & " to close, and " & FORMAT(vWindow, "#,0")
+			        & " of them cannot outlast their own lead time. Over "
+			        & FORMAT(vWeeks, "0") & " weeks the gap moved "
+			        & FORMAT(vGapMove, "+0.0%;-0.0%;0.0%") & " while stock on hand moved "
+			        & FORMAT(vStockMove, "+0.0%;-0.0%;0.0%") & " - offshore lanes "
+			        & FORMAT(vOffshore, "+0.0%;-0.0%;0.0%") & ", nearshore "
+			        & FORMAT(vNearshore, "+0.0%;-0.0%;0.0%")
+			        & ". The network is not running out of stock, it is holding it in the "
+			        & "lanes that need it least. " & FORMAT(vMove, "$#,0")
+			        & " of the gap is a transfer, not a purchase order."
+		lineageTag: 88ce45a9-cddb-5f0a-aa39-7f5f81fcbb81
+		displayFolder: Inventory
 
 	column Value
 		dataType: int64

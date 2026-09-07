@@ -3,6 +3,7 @@
   "pageOrder": [
     "section_exec_overview",
     "section_sourcing_risk",
+    "section_network_health",
     "section_inventory_risk",
     "section_otif",
     "section_exec_insights"

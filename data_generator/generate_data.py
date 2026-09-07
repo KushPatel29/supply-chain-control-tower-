@@ -285,6 +285,92 @@ def _origin_weights(names):
                   for n in names])
     return w / w.sum()
 
+
+# ---------------------------------------------------------------------------
+# Inventory position
+#
+# fact_inventory_snapshot is a LOT-level depletion model: it exists so FEFO and
+# expiry-risk questions can be answered lot by lot, and by the last snapshot most
+# lots have run down. That is the right shape for traceability and the wrong
+# shape for planning - measured on it, every SKU looks permanently stocked out.
+#
+# A planner works from a stock POSITION: on hand, on order, allocated, and the
+# target the policy says should be there. This generates that weekly per
+# SKU x warehouse, driven by the demand actually in fact_orders so the analysis
+# is not circular, with a deliberate spread of over- and under-stocked items to
+# analyse. Additive, and from its own RNG, so nothing above shifts.
+# ---------------------------------------------------------------------------
+
+POSITION_SEED = 20260908
+SERVICE_Z = 1.645          # 95% cycle service level
+POSITION_WEEKS = 13
+LANE_PIVOT_DAYS = 36       # lanes slower than this bleed, faster than this build
+LANE_DRIFT_PER_WEEK = 0.015
+
+
+def gen_inventory_position(products, warehouses, orders, sourcing):
+    rng = np.random.default_rng(POSITION_SEED)
+    orders = orders.copy()
+    orders["order_date"] = pd.to_datetime(orders["order_date"])
+    horizon = (orders.order_date.max() - orders.order_date.min()).days + 1
+
+    # Mean and standard deviation of DAILY demand per SKU x warehouse.
+    daily = (orders.groupby(["product_id", "warehouse_id", "order_date"])
+             .qty_shipped.sum().reset_index())
+    stat = daily.groupby(["product_id", "warehouse_id"]).qty_shipped.agg(["sum", "std"])
+    stat["mu"] = stat["sum"] / horizon
+    stat["sigma"] = stat["std"].fillna(0.0)
+
+    # Lead time to plan against is the SLOWEST approved source, not the average:
+    # the alternate is what you fall back on, and it is the one that hurts.
+    lead = sourcing.groupby("product_id").agg(
+        lead_days=("contract_lead_days", "max"),
+        lead_sigma=("lead_time_sigma_days", "max"))
+
+    rows = []
+    week_starts = pd.date_range(end=SNAPSHOT_END, periods=POSITION_WEEKS, freq="7D")
+    for (pid, wid), r in stat.iterrows():
+        if pid not in lead.index or r.mu <= 0:
+            continue
+        L = float(lead.loc[pid, "lead_days"])
+        sL = float(lead.loc[pid, "lead_sigma"])
+        # King's formula: demand variability over the lead time, plus the
+        # variability of the lead time itself against average demand.
+        safety = SERVICE_Z * float(np.sqrt(L * r.sigma ** 2 + (r.mu ** 2) * sL ** 2))
+        target = r.mu * L + safety
+
+        # Most SKUs sit near policy; a real network always has a tail that does
+        # not, in both directions, and that tail is the point of the analysis.
+        bias = rng.choice([0.45, 0.8, 1.0, 1.35, 1.9],
+                          p=[0.10, 0.22, 0.38, 0.20, 0.10])
+
+        # Lanes do not drift together. A long lane's replenishment loop is
+        # slower than the demand signal driving it, so it bleeds position over a
+        # quarter; a short lane re-orders inside the same period and, because it
+        # can, tends to overshoot. Total inventory barely moves while its
+        # composition rotates - which is how a network ends up holding plenty of
+        # stock and still missing service.
+        tilt = float(np.clip((L - LANE_PIVOT_DAYS) / 12.0, -1.0, 1.0))
+        for i, week in enumerate(week_starts):
+            drift = (1.0 - LANE_DRIFT_PER_WEEK * tilt) ** i
+            noise = rng.normal(1.0, 0.10)
+            on_hand = max(0.0, target * bias * drift * noise * rng.uniform(0.55, 0.85))
+            on_order = max(0.0, target * bias * drift * noise) - on_hand
+            rows.append({
+                "week_start": week.date(),
+                "product_id": int(pid),
+                "warehouse_id": int(wid),
+                "on_hand_units": int(round(on_hand)),
+                "on_order_units": int(round(max(0.0, on_order))),
+                "allocated_units": int(round(r.mu * rng.uniform(1.0, 4.0))),
+                "avg_daily_demand": round(float(r.mu), 3),
+                "demand_sigma": round(float(r.sigma), 3),
+                "lead_days": int(L),
+                "safety_stock_target": int(round(safety)),
+                "reorder_point": int(round(target)),
+            })
+    return pd.DataFrame(rows)
+
 def main():
     print("Generating dimension tables...")
     products = gen_dim_product()
@@ -305,10 +391,14 @@ def main():
     print("Generating global sourcing layer (approved vendor list)...")
     suppliers, sourcing = gen_sourcing(products, suppliers)
 
+    print("Generating weekly inventory positions (planning view)...")
+    positions = gen_inventory_position(products, warehouses, orders, sourcing)
+
     tables = {
         "dim_product": products,
         "dim_supplier": suppliers,
         "fact_sourcing": sourcing,
+        "fact_inventory_position": positions,
         "dim_warehouse": warehouses,
         "dim_customer": customers,
         "dim_lot": lots,

@@ -78,6 +78,19 @@
       "moq_units": "integer",
       "price_index": "number",
       "is_primary": "integer"
+    },
+    "fact_inventory_position": {
+      "week_start": "string",
+      "product_id": "integer",
+      "warehouse_id": "integer",
+      "on_hand_units": "integer",
+      "on_order_units": "integer",
+      "allocated_units": "integer",
+      "avg_daily_demand": "number",
+      "demand_sigma": "number",
+      "lead_days": "integer",
+      "safety_stock_target": "integer",
+      "reorder_point": "integer"
     }
   }
 }

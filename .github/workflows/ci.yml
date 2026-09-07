@@ -1,6 +1,10 @@
 name: CI
 
 on:
+  # Weekly, so a green badge means the tests pass now rather
+  # than that they passed the day of the last push.
+  schedule:
+    - cron: "24 6 * * 0"
   push:
     branches: [master, main]
   pull_request:
@@ -59,7 +63,10 @@ jobs:
       - name: Sourcing risk + perfect-order decomposition
         run: python analytics/supply_risk.py
 
-      - name: The published sourcing figures must be reproducible byte for byte
+      - name: Inventory position, cover vs lead, and the transfer opportunity
+        run: python analytics/inventory_health.py
+
+      - name: The published analytics figures must be reproducible byte for byte
         run: git diff --exit-code -- analytics/output/
 
       - name: Run pipeline logic & data-invariant tests

@@ -36,3 +36,9 @@ ref table country_exposure
 ref table perfect_order
 
 ref table perfect_order_failures
+
+ref table inventory_position
+
+ref table transfer_opportunities
+
+ref table inventory_trend

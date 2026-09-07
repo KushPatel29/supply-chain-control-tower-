@@ -1,0 +1,148 @@
+/// Planner's stock position for the current week: on hand plus on order against the reorder point the policy says should be there. Published by analytics/inventory_health.py so the report and the tests read one source.
+table inventory_position
+	lineageTag: afdf3a51-8111-5610-8126-4b34a018d8dc
+
+	column week_start
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 5ba988d9-cbf1-574c-b8a6-854e6a64573d
+		summarizeBy: none
+		sourceColumn: week_start
+
+	column sku
+		dataType: string
+		lineageTag: a9c1a9f6-27eb-54db-9fd4-a3a707744dc3
+		summarizeBy: none
+		sourceColumn: sku
+
+	column category
+		dataType: string
+		lineageTag: ae019791-2c3f-5c66-b29c-1205e68d1b73
+		summarizeBy: none
+		sourceColumn: category
+
+	column warehouse_name
+		dataType: string
+		lineageTag: 1b5177d1-bf73-5124-a020-94bdf14438b8
+		summarizeBy: none
+		sourceColumn: warehouse_name
+
+	column region
+		dataType: string
+		lineageTag: 1698a1c7-54dd-59b2-be74-c0839186d4ed
+		summarizeBy: none
+		sourceColumn: region
+
+	column abc_class
+		dataType: string
+		lineageTag: 7d246112-6efb-550d-a9ee-4f49c22df725
+		summarizeBy: none
+		sourceColumn: abc_class
+
+	column lane
+		dataType: string
+		lineageTag: 8ee7de53-f44e-5d46-8e7a-53ce93a539bb
+		summarizeBy: none
+		sourceColumn: lane
+
+	column on_hand_units
+		dataType: int64
+		formatString: #,0
+		lineageTag: 5c9a7783-ad18-59a9-8445-4797aba29799
+		summarizeBy: none
+		sourceColumn: on_hand_units
+
+	column on_order_units
+		dataType: int64
+		formatString: #,0
+		lineageTag: dc166b7a-c662-5410-bc55-0f3c3121ded4
+		summarizeBy: none
+		sourceColumn: on_order_units
+
+	column position_units
+		dataType: int64
+		formatString: #,0
+		lineageTag: acace521-edcf-5719-884a-c4b339fd6533
+		summarizeBy: none
+		sourceColumn: position_units
+
+	column reorder_point
+		dataType: int64
+		formatString: #,0
+		lineageTag: 63559e32-8291-5acd-baf8-f587db157015
+		summarizeBy: none
+		sourceColumn: reorder_point
+
+	column safety_stock_target
+		dataType: int64
+		formatString: #,0
+		lineageTag: d84caf4c-352d-56f5-ade2-b97300dd095c
+		summarizeBy: none
+		sourceColumn: safety_stock_target
+
+	column lead_days
+		dataType: int64
+		formatString: 0
+		lineageTag: a801f14e-27b2-5910-9336-ec92e0f9d191
+		summarizeBy: none
+		sourceColumn: lead_days
+
+	column cover_days
+		dataType: double
+		formatString: #,0.0
+		lineageTag: 029f7825-630a-5674-89d2-1af657fd24ba
+		summarizeBy: none
+		sourceColumn: cover_days
+
+	column covers_lead_time
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b976d7d3-5ead-52a2-9f98-aaa1a4c6c724
+		summarizeBy: none
+		sourceColumn: covers_lead_time
+
+	column gap_units
+		dataType: int64
+		formatString: #,0
+		lineageTag: 42e2f1bb-44d3-57a7-adeb-f4c4eaef7fc7
+		summarizeBy: none
+		sourceColumn: gap_units
+
+	column gap_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 58b5d7b7-4513-5821-9f4f-f645e81aa40a
+		summarizeBy: none
+		sourceColumn: gap_value
+
+	column excess_units
+		dataType: int64
+		formatString: #,0
+		lineageTag: d63ebb32-8ed2-54e8-9942-c96e98b4f2ea
+		summarizeBy: none
+		sourceColumn: excess_units
+
+	column excess_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: dd0eb75b-58b1-5a0c-966d-beee25944bfc
+		summarizeBy: none
+		sourceColumn: excess_value
+
+	column on_hand_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 4eee47d5-deac-525e-98c8-4a76f50685de
+		summarizeBy: none
+		sourceColumn: on_hand_value
+
+	partition inventory_position = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\inventory_position.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"week_start", type date}, {"sku", type text}, {"category", type text}, {"warehouse_name", type text}, {"region", type text}, {"abc_class", type text}, {"lane", type text}, {"on_hand_units", Int64.Type}, {"on_order_units", Int64.Type}, {"position_units", Int64.Type}, {"reorder_point", Int64.Type}, {"safety_stock_target", Int64.Type}, {"lead_days", Int64.Type}, {"cover_days", type number}, {"covers_lead_time", Int64.Type}, {"gap_units", Int64.Type}, {"gap_value", type number}, {"excess_units", Int64.Type}, {"excess_value", type number}, {"on_hand_value", type number}})
+				in
+				    Typed

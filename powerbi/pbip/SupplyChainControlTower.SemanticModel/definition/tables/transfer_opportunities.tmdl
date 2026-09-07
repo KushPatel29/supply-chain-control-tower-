@@ -1,0 +1,68 @@
+/// SKUs short in one warehouse and long in another: the part of the replenishment gap a stock transfer covers, with no purchase order.
+table transfer_opportunities
+	lineageTag: 85ca9750-1ee2-5f2b-8d00-de378032f71a
+
+	column product_id
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7da815f2-7f45-5937-8a8f-e54103388dc4
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column sku
+		dataType: string
+		lineageTag: bacf6d76-c34a-595f-a215-8f407338b2f9
+		summarizeBy: none
+		sourceColumn: sku
+
+	column category
+		dataType: string
+		lineageTag: 66a4a3dc-16e1-5f13-abdf-43ed95095464
+		summarizeBy: none
+		sourceColumn: category
+
+	column short_units
+		dataType: double
+		formatString: #,0
+		lineageTag: c8a25d29-a3bc-55ec-95f0-605c8d6c7d54
+		summarizeBy: none
+		sourceColumn: short_units
+
+	column spare_units
+		dataType: double
+		formatString: #,0
+		lineageTag: cdcc3158-b084-53f6-ac14-5b16b3fd5fb6
+		summarizeBy: none
+		sourceColumn: spare_units
+
+	column unit_cost
+		dataType: double
+		formatString: \$#,0.00
+		lineageTag: 491825a9-a896-5770-b928-61f76a440ec8
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	column transferable_units
+		dataType: double
+		formatString: #,0
+		lineageTag: 8f5a36e6-ac34-5435-82a1-80fddedacd78
+		summarizeBy: none
+		sourceColumn: transferable_units
+
+	column transferable_value
+		dataType: double
+		formatString: \$#,0
+		lineageTag: 5d508369-35a5-557a-ae9b-3944273f3c71
+		summarizeBy: none
+		sourceColumn: transferable_value
+
+	partition transfer_opportunities = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(AnalyticsPath & "\transfer_opportunities.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Promoted, {{"product_id", Int64.Type}, {"sku", type text}, {"category", type text}, {"short_units", type number}, {"spare_units", type number}, {"unit_cost", type number}, {"transferable_units", type number}, {"transferable_value", type number}})
+				in
+				    Typed
