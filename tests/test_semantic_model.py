@@ -72,20 +72,28 @@ def path_parameters():
     """`expression <Name> = "<literal path>"` in expressions.tmdl.
 
     The literal is an absolute path on the machine that authored the model, so
-    it does not exist on a CI runner or in anyone else's clone. Every one of
-    them points inside this repository, so the path is rebased onto ROOT at the
-    repository-name segment. Without that, this whole file passes locally and
-    fails on every push - which is the opposite of what a gate is for.
+    it does not exist on a CI runner, in anyone else's clone, or in the
+    container the Docker job builds. Every one of them points inside this
+    repository, so it is rebased onto ROOT.
+
+    Rebasing on the repository-NAME segment was the obvious way to do it and it
+    was wrong: the Docker image checks out to /app, so there is no segment to
+    match and every path fell back to the Windows literal. Matching on what
+    exists instead needs no assumption about what the directory is called - take
+    the longest tail of the literal that is a real directory under ROOT, and
+    ROOT itself when the parameter IS the repository root.
     """
     text = (SM / "expressions.tmdl").read_text(encoding="utf-8")
     out = {}
     for name, value in re.findall(r'^expression (\w+) = "([^"]+)"', text, re.M):
         parts = segments(value.replace("\\\\", "\\"))
-        if ROOT.name in parts:
-            tail = parts[parts.index(ROOT.name) + 1:]
-            out[name] = ROOT.joinpath(*tail) if tail else ROOT
+        for start in range(len(parts)):
+            candidate = ROOT.joinpath(*parts[start:])
+            if candidate.is_dir():
+                out[name] = candidate
+                break
         else:
-            out[name] = Path(value)
+            out[name] = ROOT
     return out
 
 
@@ -118,9 +126,23 @@ IDS = [c[0] for c in CASES]
 
 
 def test_the_path_parameters_resolve():
+    """Every parameter lands on a real directory, and on its OWN directory.
+
+    Falling back to ROOT is legitimate for a parameter that IS the repository
+    root, and a silent collapse for one that named a subdirectory. Two
+    parameters resolving to the same place would mean the second's tail was
+    never found - which the file-existence tests would then blame on the CSVs.
+    """
     assert PATHS, "no path parameter found in expressions.tmdl"
     for name, p in PATHS.items():
-        assert p.exists(), f"{name} points at {p}, which does not exist"
+        assert p.is_dir(), f"{name} points at {p}, which is not a directory"
+        # And inside THIS checkout. Resolving to the author's absolute path
+        # happens to work on the author's machine, which is how a gate ends up
+        # green on one laptop and red on every runner and container.
+        assert p == ROOT or ROOT in p.parents, \
+            f"{name} resolved to {p}, which is outside this checkout"
+    assert len(set(PATHS.values())) == len(PATHS), \
+        f"two path parameters resolved to the same directory: {PATHS}"
 
 
 def test_there_are_csv_backed_tables_to_check():
