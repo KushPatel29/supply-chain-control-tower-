@@ -97,9 +97,13 @@ def test_each_screenshot_looks_like_a_report_page(path):
     width, height = png_size(path)
     assert width >= 1000, f"{path.name} is {width}px wide - clipped?"
     ratio = width / height
-    assert 1.3 <= ratio <= 2.3, (
+    # A page crops to about 16:9. Wider than 1.86 means the authoring chrome is
+    # in the frame - the Filters pane is dark-themed and cannot be spotted by
+    # brightness, but it changes the crop, which is how three of these were
+    # caught shipping with it down the right-hand side.
+    assert 1.55 <= ratio <= 1.86, (
         f"{path.name} is {width}x{height} (ratio {ratio:.2f}); a report page "
-        "is roughly 16:9")
+        "crops to about 16:9 - anything wider has the Filters pane in it")
     assert path.stat().st_size > 40_000, (
         f"{path.name} is {path.stat().st_size} bytes - too plain to be a "
         "rendered page")
