@@ -41,9 +41,33 @@ table _Measures
 		formatString: #,0
 		lineageTag: 3d8abc15-4365-4127-a1b8-38193f406fe3
 
-	measure 'Total Inventory Value' = SUM(fact_inventory[inventory_value])
+	/// Stock on hand as of the latest snapshot in the current filter context.
+	/// fact_inventory holds one row per lot per WEEKLY snapshot, so a plain SUM
+	/// adds 26 separate photographs of the same warehouse together: $34,564,500
+	/// against a real position of $202,393, overstated 171x. Inventory is
+	/// semi-additive - it adds across lots and warehouses, never across dates.
+	/// The as-of date ignores the expiry-risk flag so that Critical and Warning
+	/// are shares of the same snapshot rather than of their own last dates.
+	measure 'Total Inventory Value' =
+			VAR vAsOfDate =
+				CALCULATE(
+					MAX(fact_inventory[date_key]),
+					REMOVEFILTERS(fact_inventory[expiry_risk_flag])
+				)
+			RETURN
+				CALCULATE(
+					SUM(fact_inventory[inventory_value]),
+					fact_inventory[date_key] = vAsOfDate
+				)
 		formatString: \$#,0
 		lineageTag: e58b47c8-f8db-4119-9136-fb635aa4e524
+
+	/// The date the stock figures above are as of, so a reader never has to
+	/// guess which snapshot a card is showing.
+	measure 'Inventory As Of' =
+			CALCULATE(MAX(dim_date[full_date]), fact_inventory[date_key] = CALCULATE(MAX(fact_inventory[date_key])))
+		formatString: yyyy-mm-dd
+		lineageTag: 7f2c9a41-6d3e-4b18-9c52-2a6f10b7e934
 
 	measure 'Qty On Hand' = SUM(fact_inventory[qty_on_hand])
 		formatString: #,0

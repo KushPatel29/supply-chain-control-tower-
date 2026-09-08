@@ -34,7 +34,27 @@ Qty Shipped = SUM(fact_orders[qty_shipped])
 
 // ---------- Inventory & Expiry Risk ----------
 
-Total Inventory Value = SUM(fact_inventory[inventory_value])
+// Stock on hand as of the latest snapshot in the current filter context.
+// fact_inventory holds one row per lot per WEEKLY snapshot, so a plain SUM adds
+// 26 separate photographs of the same warehouse together: $34,564,500 against a
+// real position of $202,393 - overstated 171x. Inventory is semi-additive: it
+// adds across lots and warehouses, never across dates. The as-of date ignores
+// the expiry-risk flag so Critical and Warning are shares of the same snapshot.
+Total Inventory Value =
+VAR vAsOfDate =
+    CALCULATE(
+        MAX(fact_inventory[date_key]),
+        REMOVEFILTERS(fact_inventory[expiry_risk_flag])
+    )
+RETURN
+    CALCULATE(
+        SUM(fact_inventory[inventory_value]),
+        fact_inventory[date_key] = vAsOfDate
+    )
+
+// The date those stock figures are as of.
+Inventory As Of =
+CALCULATE(MAX(dim_date[full_date]), fact_inventory[date_key] = CALCULATE(MAX(fact_inventory[date_key])))
 
 Qty On Hand = SUM(fact_inventory[qty_on_hand])
 
