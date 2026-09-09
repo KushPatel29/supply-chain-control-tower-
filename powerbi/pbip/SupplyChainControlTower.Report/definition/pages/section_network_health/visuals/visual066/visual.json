@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Column chart titled Buy it, or just move it. Plots Transfer Value by category.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

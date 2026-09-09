@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Bar chart titled Why receipts were rejected. Plots Rejected Value by reject reason.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

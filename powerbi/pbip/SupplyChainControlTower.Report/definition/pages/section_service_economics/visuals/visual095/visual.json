@@ -92,6 +92,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Column chart titled The same money, four ways. Plots Policy Fill Units by policy.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

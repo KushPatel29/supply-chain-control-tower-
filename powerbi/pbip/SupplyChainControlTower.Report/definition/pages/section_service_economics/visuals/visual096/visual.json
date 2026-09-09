@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Bar chart titled Where a marginal-return allocation moves the money. Plots Optimal Change by abc class.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

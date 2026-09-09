@@ -162,6 +162,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled Tier is a claim. The score is a measurement.. Shows supplier name, supplier tier, measured band, Composite Score, Inbound OTIF % and Inbound Spend.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

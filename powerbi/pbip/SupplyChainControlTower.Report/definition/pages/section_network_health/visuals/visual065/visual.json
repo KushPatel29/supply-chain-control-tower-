@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Bar chart titled Where the shortfall sits. Plots Replenishment Gap by warehouse name.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

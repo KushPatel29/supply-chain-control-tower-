@@ -54,6 +54,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card titled What the policy is costing you. Shows Service Insight.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

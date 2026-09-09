@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Bar chart titled Which half of OTIF actually failed. Plots Failure Orders by Failure.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

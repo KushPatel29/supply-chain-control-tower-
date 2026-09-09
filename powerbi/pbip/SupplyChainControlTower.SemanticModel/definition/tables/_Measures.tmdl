@@ -69,7 +69,37 @@ table _Measures
 		formatString: yyyy-mm-dd
 		lineageTag: 7f2c9a41-6d3e-4b18-9c52-2a6f10b7e934
 
-	measure 'Qty On Hand' = SUM(fact_inventory[qty_on_hand])
+	/// The as-of date said out loud, for a card subtitle. Inventory is
+	/// semi-additive, so every stock figure on this page is one snapshot --
+	/// a reader who cannot see which one cannot judge any of them.
+	measure 'Inventory As Of Label' =
+			VAR vAsOf = [Inventory As Of]
+			RETURN
+				IF(
+					ISBLANK(vAsOf),
+					"No stock in scope",
+					"Stock as of " & FORMAT(vAsOf, "mmm d, yyyy")
+				)
+		lineageTag: 3b9f4c17-8ad2-4e51-b6c0-71e4d9a3f082
+
+	/// Units on hand as of the latest snapshot in the current filter context.
+	/// Semi-additive for exactly the reason Total Inventory Value is: adding
+	/// all 26 weekly snapshots reports 1,519,002 units against the latest
+	/// snapshot's 8,735, overstated 174x. The as-of date ignores the
+	/// expiry-risk flag so a reader slicing to Critical still reads one
+	/// snapshot. Note the seed's last three snapshots are thin -- see
+	/// test_the_last_snapshot_is_truncated for why, and what it costs.
+	measure 'Qty On Hand' =
+			VAR vAsOfDate =
+				CALCULATE(
+					MAX(fact_inventory[date_key]),
+					REMOVEFILTERS(fact_inventory[expiry_risk_flag])
+				)
+			RETURN
+				CALCULATE(
+					SUM(fact_inventory[qty_on_hand]),
+					fact_inventory[date_key] = vAsOfDate
+				)
 		formatString: #,0
 		lineageTag: 810a246f-c76e-4836-9e00-19bb188aa3ef
 

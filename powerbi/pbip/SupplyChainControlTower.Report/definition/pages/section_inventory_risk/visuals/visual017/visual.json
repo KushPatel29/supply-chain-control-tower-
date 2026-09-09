@@ -96,6 +96,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled Lot-Level Traceability. Shows lot id, expiry date, Qty On Hand and Total Inventory Value.'"
+                }
+              }
+            }
+          }
+        }
       ]
     }
   }

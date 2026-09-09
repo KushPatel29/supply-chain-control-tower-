@@ -33,6 +33,21 @@
           ]
         }
       }
+    },
+    "visualContainerObjects": {
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card. Shows Largest Origin Share.'"
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   }
 }

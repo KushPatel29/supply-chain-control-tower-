@@ -7,7 +7,7 @@
 ![T-SQL](https://img.shields.io/badge/T--SQL-Star%20Schema-CC2927)
 ![MLflow](https://img.shields.io/badge/MLflow-backtest%20tracking-0194E2?logo=mlflow&logoColor=white)
 ![Delta Lake](https://img.shields.io/badge/Delta%20Lake-10M--row%20benchmarks-00ADD4)
-![Tests](https://img.shields.io/badge/tests-518%20passing-3B8C6E)
+![Tests](https://img.shields.io/badge/tests-659%20passing-3B8C6E)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 In specialty food distribution, every pallet is a countdown timer. A case of

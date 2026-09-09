@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled Disruption scenario, origin by origin. Shows Origin, Bloc, SKUs supplied, Stranded SKUs and Switch lead (days).'"
+                }
+              }
+            }
+          }
+        }
       ]
     }
   }

@@ -134,6 +134,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled What each service level costs, and what it buys. Shows service level, Safety Stock Value, Cost vs Today and Fill Rate.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

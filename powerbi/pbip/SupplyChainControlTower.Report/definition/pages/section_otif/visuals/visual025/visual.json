@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled Customer Scorecard. Shows customer name, Total Orders, OTIF Orders, OTIF % and Avg Fill Rate.'"
+                }
+              }
+            }
+          }
+        }
       ]
     }
   }

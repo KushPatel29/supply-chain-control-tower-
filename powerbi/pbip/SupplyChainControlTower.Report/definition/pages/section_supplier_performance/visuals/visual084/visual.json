@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Bar chart titled The panel, scored on what it did. Plots Composite Score by supplier name.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

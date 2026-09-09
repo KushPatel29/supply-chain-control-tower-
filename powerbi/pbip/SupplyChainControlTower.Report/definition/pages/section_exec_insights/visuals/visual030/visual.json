@@ -109,6 +109,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Scatter chart titled Customer Value Map: Fill Rate vs Margin. Plots Gross Margin %, Avg Fill Rate and Total Revenue by customer name.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "drillFilterOtherVisuals": true

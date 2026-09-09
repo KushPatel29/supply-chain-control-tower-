@@ -33,6 +33,21 @@
         }
       }
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card. Shows Qty Shipped.'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

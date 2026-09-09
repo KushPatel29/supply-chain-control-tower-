@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Bar chart titled COGS exposure by origin. Plots Exposed COGS by Origin.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

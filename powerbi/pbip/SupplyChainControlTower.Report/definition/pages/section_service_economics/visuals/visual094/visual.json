@@ -92,6 +92,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Line chart titled Service is not priced linearly. Plots Safety Stock Value by service level.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

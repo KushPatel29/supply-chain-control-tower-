@@ -54,6 +54,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card titled What the supply base is telling you. Shows Sourcing Insight.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

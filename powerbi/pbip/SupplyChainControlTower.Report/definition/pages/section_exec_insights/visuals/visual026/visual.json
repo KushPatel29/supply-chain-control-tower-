@@ -72,6 +72,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Gauge titled OTIF vs 95% Target. Shows OTIF % and OTIF Target.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

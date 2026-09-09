@@ -8,7 +8,7 @@ thing, not a starting point.
 |---|---|
 | Tables | **26** (10 dimensional and fact tables from the bronze CSVs, the rest engine outputs and disconnected what-if tables) |
 | Relationships | **12** |
-| Measures | **136**, in one `_Measures` table |
+| Measures | **137**, in one `_Measures` table |
 | Pages | **8**, **66** visuals |
 | Security roles | **3** — Sales - BC Lower Mainland, Regional Manager, Field Ops |
 
@@ -32,7 +32,7 @@ thing, not a starting point.
   and the engine-output tables standalone beside it. Those are deliberate: a
   service-level exchange curve and a supplier scorecard are computed in Python
   under test, not recomputed in DAX.
-- **Data pane** — `_Measures` with 136 measures, grouped into display folders.
+- **Data pane** — `_Measures` with 137 measures, grouped into display folders.
 - **Modeling → Manage roles** — the three roles above. Modeling → View as →
   Sales - BC Lower Mainland, and every total shrinks to that region.
 - **Page 1, Executive Overview** — the Region and Channel slicers move the KPI

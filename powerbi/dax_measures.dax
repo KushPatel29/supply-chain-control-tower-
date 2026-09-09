@@ -56,7 +56,31 @@ RETURN
 Inventory As Of =
 CALCULATE(MAX(dim_date[full_date]), fact_inventory[date_key] = CALCULATE(MAX(fact_inventory[date_key])))
 
-Qty On Hand = SUM(fact_inventory[qty_on_hand])
+// The as-of date as text, for the card subtitle on the inventory page.
+Inventory As Of Label =
+VAR vAsOf = [Inventory As Of]
+RETURN
+    IF(
+        ISBLANK(vAsOf),
+        "No stock in scope",
+        "Stock as of " & FORMAT(vAsOf, "mmm d, yyyy")
+    )
+
+// Units on hand as of the latest snapshot, semi-additive for the same reason
+// as Total Inventory Value: summing 26 snapshots reads 1,519,002 units
+// against the latest snapshot's 8,735. That snapshot is a thin one -- see
+// tests/test_inventory_is_semi_additive.py.
+Qty On Hand =
+VAR vAsOfDate =
+    CALCULATE(
+        MAX(fact_inventory[date_key]),
+        REMOVEFILTERS(fact_inventory[expiry_risk_flag])
+    )
+RETURN
+    CALCULATE(
+        SUM(fact_inventory[qty_on_hand]),
+        fact_inventory[date_key] = vAsOfDate
+    )
 
 Critical Expiry Value =
 CALCULATE([Total Inventory Value], fact_inventory[expiry_risk_flag] = "Critical")

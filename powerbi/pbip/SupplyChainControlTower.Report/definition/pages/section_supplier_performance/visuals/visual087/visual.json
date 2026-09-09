@@ -148,6 +148,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled Where the award does not match the performance. Shows sku, incumbent, alternate, Spend At Risk and Price Impact of Shifting.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

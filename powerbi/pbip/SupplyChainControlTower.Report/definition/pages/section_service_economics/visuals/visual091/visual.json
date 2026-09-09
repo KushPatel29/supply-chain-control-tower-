@@ -59,6 +59,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card. Shows Cost of a Point.'"
+                }
+              }
+            }
+          }
+        }
       ]
     }
   }

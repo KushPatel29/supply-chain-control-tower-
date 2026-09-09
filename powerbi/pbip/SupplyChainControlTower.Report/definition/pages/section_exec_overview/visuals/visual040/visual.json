@@ -54,6 +54,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card titled What the chain is telling you. Shows Control Tower Insight.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

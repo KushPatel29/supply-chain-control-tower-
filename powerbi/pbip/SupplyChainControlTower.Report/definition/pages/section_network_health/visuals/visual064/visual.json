@@ -110,6 +110,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Line chart titled The shortfall is growing on the lanes that already take longest. Plots Gap Trend by week label and lane.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

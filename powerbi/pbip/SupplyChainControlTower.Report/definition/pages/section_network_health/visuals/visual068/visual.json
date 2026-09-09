@@ -54,6 +54,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Card titled What the position is telling you. Shows Inventory Insight.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {

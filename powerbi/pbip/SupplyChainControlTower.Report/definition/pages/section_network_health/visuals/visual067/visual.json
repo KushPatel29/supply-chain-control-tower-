@@ -162,6 +162,19 @@
             }
           }
         }
+      ],
+      "general": [
+        {
+          "properties": {
+            "altText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Table titled Positions to act on first. Shows sku, warehouse name, lane, Cover Days, Lead Days and Replenishment Gap.'"
+                }
+              }
+            }
+          }
+        }
       ]
     },
     "objects": {
