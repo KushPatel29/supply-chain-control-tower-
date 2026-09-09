@@ -187,6 +187,17 @@ table _Measures
 		lineageTag: ce64e158-01cf-57af-8c36-857aef0e208a
 
 	/// Splits the risk number into the two tiers behind it.
+	/// The exec overview's copy of the reference label. Stock on hand has no
+	/// customer, so dim_customer never reaches fact_inventory and the Channel
+	/// slicer on that page cannot move this card - the one KPI up there that
+	/// holds still while the other three respond. Saying so on the card is the
+	/// whole point of a separate measure: the inventory risk page carries the
+	/// same label with no Channel slicer near it, and a note about a filter that
+	/// is not on screen would be its own kind of wrong.
+	measure 'Inventory Risk Reference (Exec)' = [Inventory Risk Reference] & "   ·  not filtered by Channel"
+		displayFolder: Verdict
+		lineageTag: 7d3b1c96-84af-5e20-b1c7-45f9e0a83d62
+
 	measure 'Inventory Risk Reference' = "Critical " & FORMAT([Critical Expiry Value], "\$#,0") & "   Warning " & FORMAT([Warning Expiry Value], "\$#,0")
 		displayFolder: Verdict
 		lineageTag: 482997dc-3ce2-53eb-a6a7-bf29f0c4a622
