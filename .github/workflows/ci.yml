@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r data_generator/requirements.txt
-          pip install pytest statsmodels matplotlib pyarrow mlflow scikit-learn
+          pip install pytest jsonschema statsmodels matplotlib pyarrow mlflow scikit-learn
 
       - name: Generate fresh synthetic data
         run: python data_generator/generate_data.py

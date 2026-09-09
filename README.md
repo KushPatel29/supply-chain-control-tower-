@@ -7,7 +7,7 @@
 ![T-SQL](https://img.shields.io/badge/T--SQL-Star%20Schema-CC2927)
 ![MLflow](https://img.shields.io/badge/MLflow-backtest%20tracking-0194E2?logo=mlflow&logoColor=white)
 ![Delta Lake](https://img.shields.io/badge/Delta%20Lake-10M--row%20benchmarks-00ADD4)
-![Tests](https://img.shields.io/badge/tests-437%20passing-3B8C6E)
+![Tests](https://img.shields.io/badge/tests-518%20passing-3B8C6E)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
 
 In specialty food distribution, every pallet is a countdown timer. A case of
@@ -22,7 +22,7 @@ One rule governs everything here: **nothing is claimed that isn't run,
 tested, or measured.** Every push regenerates the data from scratch, streams
 a file drop through the exactly-once ingest, executes the whole pipeline
 through a quarantine split and a data-quality gate that provably blocks bad
-builds, exercises the model-promotion policy, and runs a 437-test suite. The
+builds, exercises the model-promotion policy, and runs a 518-test suite. The
 green badge above covers the failure paths too.
 
 ## The problem, in one walk through the warehouse
@@ -686,7 +686,7 @@ powerbi/            PBIP project (TMDL + PBIR): dynamic RLS + OLS roles,
                      Time Intelligence calculation group, DAX library, build guide
 deploy/             fabric-cicd deployment script + per-environment parameter.yml
 docs/               metric dictionary, pipeline spec, MODEL_OPTIMIZATION.md, DEPLOYMENT.md
-tests/              437 tests: contracts, gate, quarantine, streaming, observability,
+tests/              518 tests: contracts, gate, quarantine, streaming, observability,
                      promotion policy, KPI rules, sourcing risk, inventory health,
                      supplier scorecard, service economics, semantic-model
                      binding, report formatting
